@@ -10,6 +10,7 @@ trait GeometryInterface {
     ) -> Result<Geometry, Box<dyn Error>>; // Geometry struct constructor
 }
 
+#[derive(Debug)]
 pub struct Geometry {
     x_len: f64,       // [m] length of waveguide in x-direction
     y_len: f64,       // [m] length of waveguide in y-direction
