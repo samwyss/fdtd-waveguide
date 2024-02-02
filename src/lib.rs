@@ -2,10 +2,10 @@
 use std::error::Error;
 
 // declare all local modules and conditionally expose them to main.rs
-pub mod solver;
 mod engine;
 mod geometry;
 mod helpers;
+pub mod solver;
 
 // declare traits (interfaces) to be implemented
 trait GeometryInterface {
