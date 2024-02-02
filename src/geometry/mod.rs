@@ -1,6 +1,16 @@
+//! Geometry Module
+//!
+//! Contains all data & code relevant to the geometry of this simulation.
+//!
+//! This is admittedly overkill for this simulation as the relative permittivity and permeability distributions are very simple. However this was left in for stylistic purposes as well as for future expandability.
+
+// import local crates and modules
 use super::Error;
 
-trait GeometryInterface {
+/// GeometryInterface trait
+///
+/// provides a common interface for interacting with Geometry structs
+pub trait GeometryInterface {
     fn new(
         x_len: f64,
         y_len: f64,
@@ -10,6 +20,9 @@ trait GeometryInterface {
     ) -> Result<Geometry, Box<dyn Error>>; // Geometry struct constructor
 }
 
+/// Geometry struct
+///
+/// Contains all data & methods associated with the geometry of this simulation
 #[derive(Debug)]
 pub struct Geometry {
     x_len: f64,       // [m] length of waveguide in x-direction
