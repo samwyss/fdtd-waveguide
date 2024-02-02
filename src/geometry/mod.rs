@@ -1,3 +1,15 @@
+use super::Error;
+
+trait GeometryInterface {
+    fn new(
+        x_len: f64,
+        y_len: f64,
+        z_len: f64,
+        ep_r: f64,
+        mu_r: f64,
+    ) -> Result<Geometry, Box<dyn Error>>; // Geometry struct constructor
+}
+
 pub struct Geometry {
     x_len: f64,       // [m] length of waveguide in x-direction
     y_len: f64,       // [m] length of waveguide in y-direction
