@@ -17,3 +17,24 @@ Cargo.lock
 # Added by cargo
 
 /target
+
+# LaTeX auxiliary files
+*.aux
+*.log
+*.out
+*.synctex.gz
+
+# Bibliography files
+*.bbl
+*.bcf
+*.blg
+
+# Generated files
+*.dvi
+*.ps
+
+# Other files
+*.fdb_latexmk
+*.fls
+*.gz
+*.toc
