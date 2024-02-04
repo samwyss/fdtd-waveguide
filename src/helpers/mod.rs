@@ -21,6 +21,23 @@ pub struct Config {
 }
 
 impl Config {
+    /// Config constructor
+    ///
+    /// # Arguments
+    ///
+    /// `path_str` path to desired configuration file
+    ///
+    /// # Returns
+    ///
+    /// `Result<Config>`
+    ///
+    /// # Errors
+    ///
+    /// - `path_str` is not able to be converted to PathBuf
+    /// - `path_str` is not a valid path on the filesystem
+    /// - `path_str` does not correspond to a file
+    /// - file at `path_str` cannot be read into a String
+    /// - file string from `path_str` cannot be deserialized into toml
     pub fn new(path_str: &str) -> Result<Config> {
         // convert path_str to a cross platform PathBuf
         let path = PathBuf::from_str(path_str)?;
@@ -42,7 +59,7 @@ impl Config {
         // load in toml string from file
         let file_string = read_to_string(path)?;
 
-        // parse data
+        // deserialize file_string into toml
         let config: Config = from_str(&file_string)?;
 
         Ok(config)
