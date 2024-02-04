@@ -10,14 +10,14 @@ use super::{anyhow, from_str, read_to_string, Deserialize, FromStr, Ok, PathBuf,
 /// Contains all data imported from ./config.toml which is used to derive other simulation structures
 #[derive(Debug, Deserialize)]
 pub struct Config {
-    max_frequency: f64,               // [Hz] maximium frequency to resolve
-    voxels_per_min_wavelength: usize, // [] number of voxels per minimum wavelength
-    voxels_per_min_feature: usize,    // [] number of voxels per minimum feature size
-    x_len: f64,                       // [m] length of waveguide in x-direction
-    y_len: f64,                       // [m] length of waveguide in y-direction
-    z_len: f64, // [m] length of waveguide in z-direction (direction of propagation)
-    ep_r: f64,  // [] diagonally isotropic relative permittivity inside waveguide
-    mu_r: f64,  // [] diagonally isotropic relative permeability inside waveguide
+    pub max_frequency: f64,               // [Hz] maximum frequency to resolve
+    pub voxels_per_min_wavelength: usize, // [] number of voxels per minimum wavelength
+    pub voxels_per_min_feature: usize,    // [] number of voxels per minimum feature size
+    pub x_len: f64,                       // [m] length of waveguide in x-direction
+    pub y_len: f64,                       // [m] length of waveguide in y-direction
+    pub z_len: f64, // [m] length of waveguide in z-direction (direction of propagation)
+    pub ep_r: f64,  // [] diagonally isotropic relative permittivity inside waveguide
+    pub mu_r: f64,  // [] diagonally isotropic relative permeability inside waveguide
 }
 
 impl Config {
