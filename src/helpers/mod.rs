@@ -25,7 +25,7 @@ impl Config {
     ///
     /// # Arguments
     ///
-    /// `path_str` path to desired configuration file
+    /// `path_str` &str path to desired configuration file
     ///
     /// # Returns
     ///
