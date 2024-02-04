@@ -7,19 +7,6 @@
 // import local crates and modules
 use super::Error;
 
-/// GeometryInterface trait
-///
-/// provides a common interface for interacting with Geometry structs
-pub trait GeometryInterface {
-    fn new(
-        x_len: f64,
-        y_len: f64,
-        z_len: f64,
-        ep_r: f64,
-        mu_r: f64,
-    ) -> Result<Geometry, Box<dyn Error>>; // Geometry struct constructor
-}
-
 /// Geometry struct
 ///
 /// Contains all data & methods associated with the geometry of this simulation
