@@ -14,6 +14,7 @@ path = "src/main.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-toml = { version = "*"}
-serde = {version = "*"}
-serde_derive ={ version = "*"}
+toml = { version = "*" }
+serde = { version = "*" }
+serde_derive = { version = "*" }
+anyhow = { version = "*" }
