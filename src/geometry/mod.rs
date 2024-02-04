@@ -33,6 +33,18 @@ pub struct Geometry {
 }
 
 impl Geometry {
+    /// Geometry constructor
+    ///
+    /// # Arguments
+    ///
+    /// `config` helpers::Config configuration struct
+    ///
+    /// # Returns
+    ///
+    /// `Result<Geometry>`
+    ///
+    /// # Errors
+    ///
     pub fn new(config: Config) -> Result<Geometry> {
         // assign x_len
         let x_len: f64 = config.x_len;
