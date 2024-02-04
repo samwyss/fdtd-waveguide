@@ -1,5 +1,17 @@
+//! fdtd_waveguide library
+//!
+//! Contains all relevant imports, declarations, etc for simulating a 3D waveguide
+//!
+//! Think of this as something similar-ish to a header file in C/C++
+
 // cargo crate imports
+use anyhow::{anyhow, Ok, Result};
+use serde_derive::Deserialize;
 use std::error::Error;
+use std::fs::read_to_string;
+use std::path::PathBuf;
+use std::str::FromStr;
+use toml::from_str;
 
 // declare constants
 pub const ETA_0: f64 = 376.730313668; // [Ohms] free space impedance
