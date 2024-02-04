@@ -7,7 +7,6 @@
 // cargo crate imports
 use anyhow::{anyhow, Ok, Result};
 use serde_derive::Deserialize;
-use std::error::Error;
 use std::fs::read_to_string;
 use std::path::PathBuf;
 use std::str::FromStr;
