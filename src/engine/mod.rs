@@ -4,23 +4,22 @@
 //!
 //! Operates on a Geometry (see ./src/geometry/mod.rs).
 
+// constant declarations
+const ONE_OVER_TWO: f64 = 1.0 / 2.0;
+
 // import local modules and cargo crates
-use crate::geometry::Geometry;
+use crate::{geometry::Geometry, C_0};
 use anyhow::{Ok, Result};
 
 #[derive(Debug)]
 pub struct Engine {
-    dt: f64,
     cur_time: f64,
-    cur_time_idx: usize,
-    targ_time: f64,
-    targ_time_idx: usize,
-    ex: Vec<f64>,
-    ey: Vec<f64>,
-    ez: Vec<f64>,
-    hx: Vec<f64>,
-    hy: Vec<f64>,
-    hz: Vec<f64>,
+    ex: ScalarField,
+    ey: ScalarField,
+    ez: ScalarField,
+    hx: ScalarField,
+    hy: ScalarField,
+    hz: ScalarField,
 }
 
 impl Engine {
@@ -31,44 +30,59 @@ impl Engine {
         // assign cur_time to 0 as that is initial state of engine
         let cur_time: f64 = 0.0;
 
-        // assign cur_time_idx to 0 as that is initial state of engine
-        let cur_time_idx: usize = 0;
-
-        // assign targ_time to 0 in constructor as it is not known at compile time
-        let targ_time: f64 = 0.0;
-
-        // assign targ_time_idx to zero as it is not known at compile time
-        let targ_time_idx: usize = 0;
-
         // extract num_vox
         let num_vox = geometry.num_vox;
 
-        // assign initial ex
-        let ex: Vec<f64> = vec![0.0; num_vox];
+        // assign ex to 0 as that is initial state of engine
+        let ex: ScalarField = ScalarField::new(
+            0.0,
+            geometry.num_vox,
+            geometry.num_vox_x,
+            geometry.num_vox_y,
+        )?;
 
-        // assign initial ey
-        let ey: Vec<f64> = vec![0.0; num_vox];
+        // assign ey to 0 as that is initial state of engine
+        let ey: ScalarField = ScalarField::new(
+            0.0,
+            geometry.num_vox,
+            geometry.num_vox_x,
+            geometry.num_vox_y,
+        )?;
 
-        // assign initial ez
-        let ez: Vec<f64> = vec![0.0; num_vox];
+        // assign ez to 0 as that is initial state of engine
+        let ez: ScalarField = ScalarField::new(
+            0.0,
+            geometry.num_vox,
+            geometry.num_vox_x,
+            geometry.num_vox_y,
+        )?;
 
-        // assign initial hx
-        let hx: Vec<f64> = vec![0.0; num_vox];
+        // assign hx to 0 as that is initial state of engine
+        let hx: ScalarField = ScalarField::new(
+            0.0,
+            geometry.num_vox,
+            geometry.num_vox_x,
+            geometry.num_vox_y,
+        )?;
 
-        // assign initial hy
-        let hy: Vec<f64> = vec![0.0; num_vox];
+        // assign hy to 0 as that is initial state of engine
+        let hy: ScalarField = ScalarField::new(
+            0.0,
+            geometry.num_vox,
+            geometry.num_vox_x,
+            geometry.num_vox_y,
+        )?;
 
-        // assign initial hz
-        let hz: Vec<f64> = vec![0.0; num_vox];
-
-        // TODO: initialize constant and curl arrays
+        // assign hz to 0 as that is initial state of engine
+        let hz: ScalarField = ScalarField::new(
+            0.0,
+            geometry.num_vox,
+            geometry.num_vox_x,
+            geometry.num_vox_y,
+        )?;
 
         Ok(Engine {
-            dt,
             cur_time,
-            cur_time_idx,
-            targ_time,
-            targ_time_idx,
             ex,
             ey,
             ez,
@@ -78,8 +92,148 @@ impl Engine {
         })
     }
 
-    pub fn update(&mut self, target_time: f64) -> Result<()> {
-        println!("updating to {}", target_time);
+    pub fn update(&mut self, geometry: &Geometry, target_time: f64) -> Result<()> {
+        // calculate first pass at time step based on Courant–Friedrichs–Lewy stability condition
+        let mut dt: f64 = (C_0
+            * (geometry.dx_inv.powi(2) + geometry.dy_inv.powi(2) + geometry.dz_inv.powi(2)).sqrt())
+        .powi(-1);
+
+        // snap this time step to a specific number of loop iterations using target_time
+        let time_steps: usize = (target_time / dt).ceil() as usize;
+
+        // recalculate the time step based on the snapped number of loop iterations
+        dt = target_time / time_steps as f64;
+
+        // pre-process loop constants
+        let ea: f64 = (geometry.ep / dt + geometry.sigma / 2.0).powi(-1);
+        let eb: f64 = geometry.ep / dt - geometry.sigma / 2.0;
+        let hax: f64 = dt * geometry.dx_inv / geometry.mu;
+        let hay: f64 = dt * geometry.dy_inv / geometry.mu;
+        let haz: f64 = dt * geometry.dz_inv / geometry.mu;
+
+        // time loop
+        for t in 0..time_steps {
+            // update magnetic field
+            self.update_h(&geometry, &hax, &hay, &haz)?;
+
+            // update current engine time after magnetic field update
+            self.cur_time += ONE_OVER_TWO * dt;
+
+            // update electric field
+
+            // update current engine time after electric field update
+            self.cur_time += ONE_OVER_TWO * dt;
+
+            //TODO remove me
+            println!("{} of {}", t, time_steps);
+        }
+
         Ok(())
+    }
+
+    fn update_h(&mut self, geometry: &Geometry, hax: &f64, hay: &f64, haz: &f64) -> Result<()> {
+        // update hx
+        self.update_hx(geometry, hay, haz)?;
+
+        // update hy
+        self.update_hy(geometry, hax, haz)?;
+
+        // update hz
+        self.update_hz(geometry, hax, hay)?;
+
+        Ok(())
+    }
+
+    fn update_hx(&mut self, geometry: &Geometry, hay: &f64, haz: &f64) -> Result<()> {
+        // hx update equation for all non j-high and k-high points
+        for k in 0..(geometry.num_vox_z - 1) {
+            for j in 0..(geometry.num_vox_y - 1) {
+                for i in 0..geometry.num_vox_x {
+                    *self.hz.idxm(i, j, k) += -hay
+                        * (&self.ez.idx(i, j + 1, k) - self.ez.idx(i, j, k))
+                        + haz * (self.ey.idx(i, j, k + 1) - self.ey.idx(i, j, k));
+                }
+            }
+
+            // hx update equation for j-high plane
+            for i in 0..geometry.num_vox_x {
+                *self.hz.idxm(i, geometry.num_vox_y - 1, k) += -hay
+                    * (0.0 - self.ez.idx(i, geometry.num_vox_y - 1, k))
+                    + haz
+                        * (self.ey.idx(i, geometry.num_vox_y - 1, k + 1)
+                            - self.ey.idx(i, geometry.num_vox_y - 1, k));
+            }
+        }
+
+        // hx update equation for k-high plane
+        for j in 0..(geometry.num_vox_y - 1) {
+            for i in 0..geometry.num_vox_x {
+                *self.hz.idxm(i, j, geometry.num_vox_z - 1) += -hay
+                    * (&self.ez.idx(i, j + 1, geometry.num_vox_z - 1)
+                        - self.ez.idx(i, j, geometry.num_vox_z - 1))
+                    + haz * (0.0 - self.ey.idx(i, j, geometry.num_vox_z - 1));
+            }
+        }
+
+        // hx update equation for j-high, k-high
+        for i in 0..geometry.num_vox_x {
+            *self
+                .hz
+                .idxm(i, geometry.num_vox_y - 1, geometry.num_vox_z - 1) += -hay
+                * (0.0
+                    - self
+                        .ez
+                        .idx(i, geometry.num_vox_y - 1, geometry.num_vox_z - 1))
+                + haz
+                    * (0.0
+                        - self
+                            .ey
+                            .idx(i, geometry.num_vox_y - 1, geometry.num_vox_z - 1));
+        }
+
+        Ok(())
+    }
+
+    fn update_hy(&mut self, geometry: &Geometry, hax: &f64, haz: &f64) -> Result<()> {
+        // hy update equation
+
+        Ok(())
+    }
+
+    fn update_hz(&mut self, geometry: &Geometry, hax: &f64, hay: &f64) -> Result<()> {
+        // hz update equation
+
+        Ok(())
+    }
+}
+
+#[derive(Debug)]
+struct ScalarField {
+    field: Vec<f64>,
+    row_offset: usize,
+    column_offset: usize,
+}
+
+impl ScalarField {
+    pub fn new(
+        initial_value: f64,
+        size: usize,
+        row_offset: usize,
+        column_offset: usize,
+    ) -> Result<ScalarField> {
+        let field = vec![initial_value; size];
+        Ok(ScalarField {
+            field,
+            row_offset,
+            column_offset,
+        })
+    }
+
+    pub fn idx(&self, i: usize, j: usize, k: usize) -> f64 {
+        self.field[i + j * self.row_offset + k * self.row_offset * self.column_offset]
+    }
+
+    pub fn idxm(&mut self, i: usize, j: usize, k: usize) -> &mut f64 {
+        &mut self.field[i + j * self.row_offset + k * self.row_offset * self.column_offset]
     }
 }
