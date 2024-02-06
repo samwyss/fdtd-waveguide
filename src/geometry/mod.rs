@@ -23,7 +23,6 @@ pub struct Geometry {
     pub num_vox_y: usize, // [] number of voxels in y-direction
     pub num_vox_z: usize, // [] number of voxels in z-direction
     pub num_vox: usize, // [] number of voxels in the simulation domain
-    pub num_vox_plane: usize, // [] number of voxels in xy plane, used for z-offset
 }
 
 impl Geometry {
@@ -96,9 +95,6 @@ impl Geometry {
         // assign num_vox
         let num_vox: usize = num_vox_x * num_vox_y * num_vox_z;
 
-        // assign num_vox_plane (xy-plane)
-        let num_vox_plane: usize = num_vox_x * num_vox_y;
-
         // use the snapped number of voxels to back solve for the spacing in all directions
         // These are stored as inverses as they are only every divided by in the update equations. Thus storing their inverses is a low-skill optimization as divides are computationally expensive in comparison to multiplies especially when done many times in loops
         // assign dx_inv
@@ -121,7 +117,6 @@ impl Geometry {
             num_vox_y,
             num_vox_z,
             num_vox,
-            num_vox_plane,
         })
     }
 }
