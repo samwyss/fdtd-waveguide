@@ -4,14 +4,6 @@
 //!
 //! Think of this as something similar-ish to a header file in C/C++
 
-// cargo crate imports
-use anyhow::{anyhow, Ok, Result};
-use serde_derive::Deserialize;
-use std::fs::read_to_string;
-use std::path::PathBuf;
-use std::str::FromStr;
-use toml::from_str;
-
 // declare constants
 pub const ETA_0: f64 = 376.730313668; // [Ohms] free space impedance
 pub const EP_0: f64 = 8.8541878128e-12; // [F/m] free space vacuum permittivity
