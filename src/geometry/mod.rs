@@ -2,10 +2,10 @@
 //!
 //! Contains all data & code relevant to the geometry of this simulation.
 //!
-//! This is admittedly overkill for this simulation as the relative permittivity and permeability distributions are very simple. However this was left in for stylistic purposes as well as for future expandability if desired.
+//! This is admittedly overkill for this simulation as the permittivity, permeability, and conductivity distributions are very simple. However this was left in for stylistic purposes as well as for future expandability if desired.
 
 // import local modules and cargo crates
-use super::{helpers::Config, C_0};
+use crate::{helpers::Config, C_0, EP_0, MU_0};
 use anyhow::{Ok, Result};
 
 /// Geometry struct
@@ -13,24 +13,16 @@ use anyhow::{Ok, Result};
 /// Contains all data & methods associated with the geometry of this simulation
 #[derive(Debug)]
 pub struct Geometry {
-    x_len: f64,         // [m] length of waveguide in x-direction
-    y_len: f64,         // [m] length of waveguide in y-direction
-    z_len: f64,         // [m] length of waveguide in z-direction (direction of propagation)
-    ep_r: f64, // [] diagonally isotropic relative permittivity of material inside waveguide
-    mu_r: f64, // [] diagonally isotropic relative permeability of material inside waveguide
-    n: f64,    // [] refractive index of material inside of waveguide
-    dx: f64,   // [m] spatial increment in x-direction
-    dy: f64,   // [m] spatial increment in y-direction
-    dz: f64,   // [m] spatial increment in z-direction
-    num_vox_x: usize, // [] number of voxels in x-direction
-    num_vox_y: usize, // [] number of voxels in y-direction
-    num_vox_z: usize, // [] number of voxels in z-direction
+    pub ep: f64,     // [F/m] diagonally isotropic permittivity of material inside waveguide
+    pub mu: f64,     // [H/m] diagonally isotropic permeability of material inside waveguide
+    pub sigma: f64,  // [S/m] diagonally isotropic conductivity of material inside waveguide
+    pub dx_inv: f64, // [m^-1] inverse spatial increment in x-direction
+    pub dy_inv: f64, // [m^-1] inverse spatial increment in y-direction
+    pub dz_inv: f64, // [m^-1] inverse spatial increment in z-direction
+    pub num_vox_x: usize, // [] number of voxels in x-direction
+    pub num_vox_y: usize, // [] number of voxels in y-direction
+    pub num_vox_z: usize, // [] number of voxels in z-direction
     pub num_vox: usize, // [] number of voxels in the simulation domain
-    ep_r_inv: f64, // [] inverse of relative permittivity of material inside waveguide
-    mu_r_inv: f64, // [] inverse of relative permeability of material inside waveguide
-    dx_inv: f64, // [m^-1] inverse of spatial increment in x-direction
-    dy_inv: f64, // [m^-1] inverse of spatial increment in y-direction
-    dz_inv: f64, // [m^-1] inverse of spatial increment in z-direction
 }
 
 impl Geometry {
@@ -62,11 +54,17 @@ impl Geometry {
         // assign mu_r
         let mu_r: f64 = config.mu_r;
 
-        // assign n
-        let n: f64 = (ep_r * mu_r).sqrt();
+        // assign ep
+        let ep = ep_r * EP_0;
+
+        // assign mu
+        let mu = mu_r * MU_0;
+
+        // assign sigma
+        let sigma = config.sigma;
 
         // determine the minimum spatial step based on the minimum wavelength (maximum frequency) and the number of voxels desired to resolve a single wavelength
-        let minimum_wavelength: f64 = C_0 / (config.max_frequency * n);
+        let minimum_wavelength: f64 = C_0 / (config.max_frequency * (ep_r * mu_r).sqrt());
         let ds_minimum_wavelength: f64 =
             minimum_wavelength / config.voxels_per_min_wavelength as f64;
 
@@ -98,52 +96,27 @@ impl Geometry {
         let num_vox: usize = num_vox_x * num_vox_y * num_vox_z;
 
         // use the snapped number of voxels to back solve for the spacing in all directions
-        // assign dx
-        let dx: f64 = x_len / num_vox_x as f64;
-
-        // assign dy
-        let dy: f64 = y_len / num_vox_y as f64;
-
-        // assign dz
-        let dz: f64 = z_len / num_vox_z as f64;
-
-        // calculate the inverse of properties that are frequently divided
-        // this is done as a low-skill optimization as divides are computationally expensive in comparison to multiplies especially when done many times in loops
-
-        // assign ep_r_inv
-        let ep_r_inv: f64 = 1.0 / ep_r;
-
-        // assign mu_r_inv
-        let mu_r_inv: f64 = 1.0 / mu_r;
-
+        // These are stored as inverses as they are only every divided by in the update equations. Thus storing their inverses is a low-skill optimization as divides are computationally expensive in comparison to multiplies especially when done many times in loops
         // assign dx_inv
-        let dx_inv: f64 = 1.0 / dx;
+        let dx_inv: f64 = num_vox_x as f64 / x_len;
 
         // assign dy_inv
-        let dy_inv: f64 = 1.0 / dy;
+        let dy_inv: f64 = num_vox_y as f64 / y_len;
 
         // assign dz_inv
-        let dz_inv: f64 = 1.0 / dz;
+        let dz_inv: f64 = num_vox_z as f64 / z_len;
 
         Ok(Geometry {
-            x_len,
-            y_len,
-            z_len,
-            ep_r,
-            mu_r,
-            n,
-            dx,
-            dy,
-            dz,
+            ep,
+            mu,
+            sigma,
+            dx_inv,
+            dy_inv,
+            dz_inv,
             num_vox_x,
             num_vox_y,
             num_vox_z,
             num_vox,
-            ep_r_inv,
-            mu_r_inv,
-            dx_inv,
-            dy_inv,
-            dz_inv,
         })
     }
 }
