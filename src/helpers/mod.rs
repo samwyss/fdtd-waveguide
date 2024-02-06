@@ -23,6 +23,7 @@ pub struct Config {
     pub z_len: f64, // [m] length of waveguide in z-direction (direction of propagation)
     pub ep_r: f64,  // [] diagonally isotropic relative permittivity inside waveguide
     pub mu_r: f64,  // [] diagonally isotropic relative permeability inside waveguide
+    pub sigma: f64, // [S/m] diagonally isotropic conductivity of material
 }
 
 impl Config {
