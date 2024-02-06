@@ -43,7 +43,7 @@ impl Solver {
 
     pub fn update(&mut self, target_time: f64) -> Result<()> {
         // update the engine to the target time
-        self.engine.update(target_time)?;
+        self.engine.update(&self.geometry, target_time)?;
 
         Ok(())
     }
