@@ -5,7 +5,7 @@
 //! Operates on a Geometry (see ./src/geometry/mod.rs).
 
 // import local modules and cargo crates
-use super::geometry::Geometry;
+use crate::geometry::Geometry;
 use anyhow::{Ok, Result};
 
 #[derive(Debug)]
