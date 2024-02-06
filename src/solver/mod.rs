@@ -1,9 +1,9 @@
 //! Solver module
 //!
-//! Acts as a high level interface for controlling the simulation containing relevant data & code to achieve said goal
+//! Acts as a high level interface for controlling the simulation
 
 // import local crates and modules
-use super::{geometry::Geometry, helpers::Config, Ok, Result};
+use super::{engine::Engine, geometry::Geometry, helpers::Config, Ok, Result};
 
 /// Solver struct
 ///
@@ -11,6 +11,7 @@ use super::{geometry::Geometry, helpers::Config, Ok, Result};
 #[derive(Debug)]
 pub struct Solver {
     geometry: Geometry, // Geometry struct containing all data & code pertaining to the geometry of the simulation (see ./src/geometry/mod.rs)
+    engine: Engine, // Engine struct containing all data relevant to the state of the simulation and code needed to evolve said state (see ./src/engine/mod.rs)
 }
 
 impl Solver {
@@ -34,22 +35,8 @@ impl Solver {
         let geometry = Geometry::new(config)?;
 
         // create a new engine for the given geometry (see ./src/engine/mod.rs)
+        let engine = Engine::new(geometry)?;
 
-        // time increment is set to 0 in constructor
-        let dt = 0.0;
-
-        // current time assumed to be 0 in constructor
-        let cur_time = 0.0;
-
-        // current time index assumed to be 0 in constructor
-        let cur_time_idx: usize = 0;
-
-        // target time assumed to be 0 in constructor
-        let targ_time = 0.0;
-
-        // target time index assumed to be 0 in constructor
-        let targ_time_idx: usize = 0;
-
-        Ok(Solver { geometry })
+        Ok(Solver { geometry, engine })
     }
 }
