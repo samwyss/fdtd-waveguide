@@ -3,7 +3,12 @@
 //! Contains helper methods and structures that are not explicitly tied to the physics of FDTD but useful nonetheless
 
 // import local crates and modules
-use super::{anyhow, from_str, read_to_string, Deserialize, FromStr, Ok, PathBuf, Result};
+use anyhow::{anyhow, Ok, Result};
+use serde_derive::Deserialize;
+use std::fs::read_to_string;
+use std::path::PathBuf;
+use std::str::FromStr;
+use toml::from_str;
 
 /// Config Struct
 ///

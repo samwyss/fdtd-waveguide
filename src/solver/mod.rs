@@ -3,7 +3,8 @@
 //! Acts as a high level interface for controlling the simulation
 
 // import local crates and modules
-use super::{engine::Engine, geometry::Geometry, helpers::Config, Ok, Result};
+use super::{engine::Engine, geometry::Geometry, helpers::Config};
+use anyhow::{Ok, Result};
 
 /// Solver struct
 ///
@@ -35,8 +36,15 @@ impl Solver {
         let geometry = Geometry::new(config)?;
 
         // create a new engine for the given geometry (see ./src/engine/mod.rs)
-        let engine = Engine::new(geometry)?;
+        let engine = Engine::new(&geometry)?;
 
         Ok(Solver { geometry, engine })
+    }
+
+    pub fn update(&mut self, target_time: f64) -> Result<()> {
+        // update the engine to the target time
+        self.engine.update(target_time)?;
+
+        Ok(())
     }
 }
