@@ -126,7 +126,7 @@ impl Engine {
             self.cur_time += ONE_OVER_TWO * dt;
 
             //TODO remove me
-            println!("{} of {}", t, time_steps);
+            println!("{} of {}", t + 1, time_steps);
         }
 
         Ok(())
