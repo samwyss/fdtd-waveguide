@@ -6,6 +6,8 @@
 use anyhow::{anyhow, Ok, Result};
 use serde_derive::Deserialize;
 use std::fs::read_to_string;
+use std::fs::File;
+use std::io::BufWriter;
 use std::path::PathBuf;
 use std::str::FromStr;
 use toml::from_str;
@@ -70,4 +72,14 @@ impl Config {
 
         Ok(config)
     }
+}
+
+pub fn write_buf_vec(
+    buffered_writer: &mut csv::Writer<BufWriter<File>>,
+    data: &[f64],
+) -> Result<()> {
+    // write data into buffered_writer
+    buffered_writer.write_record(data.iter().map(|x| x.to_string()).collect::<Vec<String>>())?;
+
+    Ok(())
 }

@@ -8,11 +8,11 @@
 const ONE_OVER_TWO: f64 = 1.0 / 2.0;
 
 // import local modules and cargo crates
-use crate::{
-    geometry::{self, Geometry},
-    C_0,
-};
+use crate::{geometry::Geometry, helpers::write_buf_vec, C_0};
 use anyhow::{Ok, Result};
+use csv::WriterBuilder;
+use std::fs::{remove_file, File, OpenOptions};
+use std::io::BufWriter;
 
 #[derive(Debug)]
 pub struct Engine {
@@ -23,6 +23,7 @@ pub struct Engine {
     hx: ScalarField,
     hy: ScalarField,
     hz: ScalarField,
+    hx_wtr: csv::Writer<BufWriter<File>>,
 }
 
 impl Engine {
@@ -81,6 +82,23 @@ impl Engine {
             geometry.num_vox_y,
         )?;
 
+        // create paths for output files of all field values
+        let hx_path = "./hx.csv";
+
+        // attempt to remove files from previous simulation runs
+        let _ = remove_file(&hx_path);
+
+        // create file descriptors for all field values
+        let hx_file = OpenOptions::new()
+            .append(true)
+            .create(true)
+            .open(&hx_path)?;
+
+        // create buffered writers for all field values
+        let hx_wtr: csv::Writer<BufWriter<File>> = WriterBuilder::new()
+            .has_headers(false)
+            .from_writer(BufWriter::new(hx_file));
+
         Ok(Engine {
             cur_time,
             ex,
@@ -89,6 +107,7 @@ impl Engine {
             hx,
             hy,
             hz,
+            hx_wtr,
         })
     }
 
@@ -128,6 +147,9 @@ impl Engine {
             //TODO remove me
             println!("{} of {}", t + 1, time_steps);
         }
+
+        //TODO remove me
+        write_buf_vec(&mut self.hx_wtr, &self.hx.field)?;
 
         Ok(())
     }
