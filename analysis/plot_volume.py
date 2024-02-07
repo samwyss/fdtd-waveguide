@@ -105,21 +105,40 @@ from multiprocessing import Pool
 # Function to render a single frame
 def render_frame(args):
     # Set the fixed range for the colormap
-    vmin = 0
-    vmax = 1
-    size_x = 67
-    size_y = 67
-    size_z = 67
-    vmin = -1
-    vmax = 1
+    size_x = 34
+    size_y = 34
+    size_z = 34
+    vmine = -10
+    vmaxe = 10
+    vminh = -0.01
+    vmaxh = 0.01
     cmap = cm.coolwarm
     t, data_arrays = args
     # Create a 3D figure
     fig = plt.figure(figsize=(10, 10))
 
     for i, voxels_2d in enumerate(data_arrays):
+
         # Create a 3D subplot
         ax = fig.add_subplot(2, 3, i + 1, projection="3d")
+        ax.view_init(45, 45)
+
+        ax.set_xlabel("X Axis")
+        ax.set_ylabel("Y Axis")
+        ax.set_zlabel("Z Axis")
+
+        if i == 0:
+            ax.set_title("Hx")
+        elif i == 1:
+            ax.set_title("Hy")
+        elif i == 2:
+            ax.set_title("Hz")
+        elif i == 3:
+            ax.set_title("Ex")
+        elif i == 4:
+            ax.set_title("Ey")
+        elif i == 5:
+            ax.set_title("Ez")
 
         # Reshape the 1D array into a 3D array
         voxels = voxels_2d[t].reshape((size_x, size_y, size_z), order="F")
@@ -131,17 +150,28 @@ def render_frame(args):
         mask = np.ones((size_x, size_y, size_z), dtype=bool)
 
         # Create a color array using a colormap
-        colors = cmap((voxels - vmin) / (vmax - vmin))
+
+        if i % 2 == 0:
+            colors = cmap((voxels - vmine) / (vmaxe - vmine))
+        else:
+            colors = cmap((voxels - vminh) / (vmaxh - vminh))
 
         # Draw the voxels
         ax.voxels(x, y, z, mask, facecolors=colors)
 
         # Create a ScalarMappable object for the color bar
-        sm = plt.cm.ScalarMappable(cmap=cmap, norm=Normalize(vmin=vmin, vmax=vmax))
+        if i % 2 == 0:
+            sm = plt.cm.ScalarMappable(
+                cmap=cmap, norm=Normalize(vmin=vmine, vmax=vmaxe)
+            )
+        else:
+            sm = plt.cm.ScalarMappable(
+                cmap=cmap, norm=Normalize(vmin=vminh, vmax=vmaxh)
+            )
         sm.set_array([])
 
         # Add the color bar to the figure
-        fig.colorbar(sm, ax=ax)
+        # fig.colorbar(sm, ax=ax)
 
     # Save the figure as an image
     plt.savefig(f"images/frame_{t:03d}.png")

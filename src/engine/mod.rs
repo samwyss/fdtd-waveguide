@@ -236,7 +236,7 @@ impl Engine {
             for j in 0..(geometry.num_vox_y - 1) {
                 for i in 0..geometry.num_vox_x {
                     // hx update equation for non j-high, k-high volume
-                    *self.hz.idxm(i, j, k) += -hay
+                    *self.hx.idxm(i, j, k) += -hay
                         * (&self.ez.idx(i, j + 1, k) - self.ez.idx(i, j, k))
                         + haz * (self.ey.idx(i, j, k + 1) - self.ey.idx(i, j, k));
                 }
@@ -244,7 +244,7 @@ impl Engine {
 
             for i in 0..geometry.num_vox_x {
                 // hx update equation for j-high plane
-                *self.hz.idxm(i, geometry.num_vox_y - 1, k) += -hay
+                *self.hx.idxm(i, geometry.num_vox_y - 1, k) += -hay
                     * (0.0 - self.ez.idx(i, geometry.num_vox_y - 1, k))
                     + haz
                         * (self.ey.idx(i, geometry.num_vox_y - 1, k + 1)
@@ -255,7 +255,7 @@ impl Engine {
         for j in 0..(geometry.num_vox_y - 1) {
             for i in 0..geometry.num_vox_x {
                 // hx update equation for k-high plane
-                *self.hz.idxm(i, j, geometry.num_vox_z - 1) += -hay
+                *self.hx.idxm(i, j, geometry.num_vox_z - 1) += -hay
                     * (&self.ez.idx(i, j + 1, geometry.num_vox_z - 1)
                         - self.ez.idx(i, j, geometry.num_vox_z - 1))
                     + haz * (0.0 - self.ey.idx(i, j, geometry.num_vox_z - 1));
@@ -265,7 +265,7 @@ impl Engine {
         for i in 0..geometry.num_vox_x {
             // hx update equation for j-high, k-high line
             *self
-                .hz
+                .hx
                 .idxm(i, geometry.num_vox_y - 1, geometry.num_vox_z - 1) += -hay
                 * (0.0
                     - self
@@ -296,7 +296,7 @@ impl Engine {
                 // hy update equation for i-high plane
                 *self.hy.idxm(geometry.num_vox_x - 1, j, k) += -haz
                     * (self.ex.idx(geometry.num_vox_x - 1, j, k + 1)
-                        - self.ex.idx(geometry.num_vox_x, j, k))
+                        - self.ex.idx(geometry.num_vox_x - 1, j, k))
                     + hax * (0.0 - self.ez.idx(geometry.num_vox_x - 1, j, k));
             }
         }
@@ -384,7 +384,12 @@ impl Engine {
         self.update_ez(geometry, &ea, &eb)?;
 
         //TODO remove me
-        *self.ex.idxm(30, 30, 15) += 100.0 * ea * eb * -(1e9 * 2.0 * 3.14159 * self.cur_time).sin();
+        for k in 0..geometry.num_vox_z {
+            for i in 0..geometry.num_vox_x {
+                *self.ex.idxm(i, geometry.num_vox_y - 1, k) +=
+                    -(5e8 * 2.0 * 3.14159 * self.cur_time).sin();
+            }
+        }
 
         Ok(())
     }
@@ -439,7 +444,7 @@ impl Engine {
                         - geometry.dx_inv * (self.hz.idx(0, j, k) - 0.0));
 
                 for i in 1..geometry.num_vox_x {
-                    // ey update equation for all non i-low k-low volume
+                    // ey update equation for all non i-low, k-low volume
                     *self.ey.idxm(i, j, k) = ea
                         * (eb * self.ey.idx(i, j, k)
                             + geometry.dz_inv * (self.hx.idx(i, j, k) - self.hx.idx(i, j, k - 1))
