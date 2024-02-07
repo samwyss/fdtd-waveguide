@@ -324,6 +324,38 @@ impl Engine {
     }
 
     fn update_ey(&mut self, geometry: &Geometry, ea: &f64, eb: &f64) -> Result<()> {
+        for k in 1..geometry.num_vox_z {
+            for j in 0..geometry.num_vox_y {
+                // ey update equation for i-low surface
+                *self.ey.idxm(0, j, k) = ea
+                    * (eb * self.ey.idx(0, j, k)
+                        + geometry.dz_inv * (self.hx.idx(0, j, k) - self.hx.idx(0, j, k - 1))
+                        - geometry.dx_inv * (self.hz.idx(0, j, k) - 0.0));
+
+                for i in 1..geometry.num_vox_x {
+                    // ey update equation for all non i-low and k-low volume
+                    *self.ey.idxm(i, j, k) = ea
+                        * (eb * self.ey.idx(i, j, k)
+                            + geometry.dz_inv * (self.hx.idx(i, j, k) - self.hx.idx(i, j, k - 1))
+                            - geometry.dx_inv * (self.hz.idx(i, j, k) - self.hz.idx(i - 1, j, k)));
+                }
+            }
+        }
+
+        for j in 0..geometry.num_vox_y {
+            // ey update equation for i-low, k-low line
+            *self.ey.idxm(0, j, 0) = ea
+                * (eb * self.ey.idx(0, j, 0) + geometry.dz_inv * (self.hx.idx(0, j, 0) - 0.0)
+                    - geometry.dx_inv * (self.hz.idx(0, j, 0) - 0.0));
+
+            for i in 1..geometry.num_vox_x {
+                // ey update equation for k-low surface
+                *self.ey.idxm(i, j, 0) = ea
+                    * (eb * self.ey.idx(i, j, 0) + geometry.dz_inv * (self.hx.idx(i, j, 0) - 0.0)
+                        - geometry.dx_inv * (self.hz.idx(i, j, 0) - self.hz.idx(i - 1, j, 0)));
+            }
+        }
+
         Ok(())
     }
 
