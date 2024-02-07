@@ -8,7 +8,10 @@
 const ONE_OVER_TWO: f64 = 1.0 / 2.0;
 
 // import local modules and cargo crates
-use crate::{geometry::Geometry, C_0};
+use crate::{
+    geometry::{self, Geometry},
+    C_0,
+};
 use anyhow::{Ok, Result};
 
 #[derive(Debug)]
@@ -145,18 +148,18 @@ impl Engine {
     }
 
     fn update_hx(&mut self, geometry: &Geometry, hay: &f64, haz: &f64) -> Result<()> {
-        // hx update equation for all non j-high and k-high points
         for k in 0..(geometry.num_vox_z - 1) {
             for j in 0..(geometry.num_vox_y - 1) {
                 for i in 0..geometry.num_vox_x {
+                    // hx update equation for non j-high and k-high volume
                     *self.hz.idxm(i, j, k) += -hay
                         * (&self.ez.idx(i, j + 1, k) - self.ez.idx(i, j, k))
                         + haz * (self.ey.idx(i, j, k + 1) - self.ey.idx(i, j, k));
                 }
             }
 
-            // hx update equation for j-high plane
             for i in 0..geometry.num_vox_x {
+                // hx update equation for j-high plane
                 *self.hz.idxm(i, geometry.num_vox_y - 1, k) += -hay
                     * (0.0 - self.ez.idx(i, geometry.num_vox_y - 1, k))
                     + haz
@@ -165,9 +168,9 @@ impl Engine {
             }
         }
 
-        // hx update equation for k-high plane
         for j in 0..(geometry.num_vox_y - 1) {
             for i in 0..geometry.num_vox_x {
+                // hx update equation for k-high plane
                 *self.hz.idxm(i, j, geometry.num_vox_z - 1) += -hay
                     * (&self.ez.idx(i, j + 1, geometry.num_vox_z - 1)
                         - self.ez.idx(i, j, geometry.num_vox_z - 1))
@@ -175,8 +178,8 @@ impl Engine {
             }
         }
 
-        // hx update equation for j-high, k-high
         for i in 0..geometry.num_vox_x {
+            // hx update equation for j-high, k-high line
             *self
                 .hz
                 .idxm(i, geometry.num_vox_y - 1, geometry.num_vox_z - 1) += -hay
@@ -195,13 +198,79 @@ impl Engine {
     }
 
     fn update_hy(&mut self, geometry: &Geometry, hax: &f64, haz: &f64) -> Result<()> {
-        // hy update equation
+        for k in 0..(geometry.num_vox_z - 1) {
+            for j in 0..geometry.num_vox_y {
+                for i in 0..(geometry.num_vox_x - 1) {
+                    // hy update for non i-high and k-high volume
+                    *self.hy.idxm(i, j, k) += -haz
+                        * (self.ex.idx(i, j, k + 1) - self.ex.idx(i, j, k))
+                        + hax * (self.ez.idx(i + 1, j, k) - self.ez.idx(i, j, k));
+                }
+            }
+
+            for j in 0..geometry.num_vox_y {
+                // hy update equation for i-high plane
+                *self.hy.idxm(geometry.num_vox_x - 1, j, k) += -haz
+                    * (self.ex.idx(geometry.num_vox_x - 1, j, k + 1)
+                        - self.ex.idx(geometry.num_vox_x, j, k))
+                    + hax * (0.0 - self.ez.idx(geometry.num_vox_x - 1, j, k));
+            }
+        }
+
+        for j in 0..geometry.num_vox_y {
+            for i in 0..(geometry.num_vox_x - 1) {
+                // hy update equation for k-high plane
+                *self.hy.idxm(i, j, geometry.num_vox_z - 1) += -haz
+                    * (0.0 - self.ex.idx(i, j, geometry.num_vox_z - 1))
+                    + hax
+                        * (self.ez.idx(i + 1, j, geometry.num_vox_z - 1)
+                            - self.ez.idx(i, j, geometry.num_vox_z - 1));
+            }
+
+            // hy update equation for i-high, k-high line
+            *self
+                .hy
+                .idxm(geometry.num_vox_x - 1, j, geometry.num_vox_z - 1) += -haz
+                * (0.0
+                    - self
+                        .ex
+                        .idx(geometry.num_vox_x - 1, j, geometry.num_vox_z - 1))
+                + hax
+                    * (0.0
+                        - self
+                            .ez
+                            .idx(geometry.num_vox_x - 1, j, geometry.num_vox_z - 1));
+        }
 
         Ok(())
     }
 
     fn update_hz(&mut self, geometry: &Geometry, hax: &f64, hay: &f64) -> Result<()> {
-        // hz update equation
+        for k in 0..geometry.num_vox_z {
+            for j in 0..(geometry.num_vox_y - 1) {
+                for i in 0..(geometry.num_vox_x - 1) {
+                    // hz update for non i-high and j-high volume
+                    *self.hz.idxm(i, j, k) += -hax
+                        * (self.ey.idx(i + 1, j, k) - self.ey.idx(i, j, k))
+                        + hay * (self.ex.idx(i, j + 1, k) - self.ex.idx(i, j, k));
+                }
+
+                // hz update equation for i-high plane
+                *self.hz.idxm(geometry.num_vox_x - 1, j, k) += -hax
+                    * (0.0 - self.ey.idx(geometry.num_vox_x - 1, j, k))
+                    + hay
+                        * (self.ex.idx(geometry.num_vox_x - 1, j + 1, k)
+                            - self.ex.idx(geometry.num_vox_x - 1, j, k));
+            }
+
+            for i in 0..(geometry.num_vox_x - 1) {
+                // hz update equation for j-high plane
+                *self.hz.idxm(i, geometry.num_vox_y - 1, k) += -hax
+                    * (self.ey.idx(i + 1, geometry.num_vox_y - 1, k)
+                        - self.ey.idx(i, geometry.num_vox_y - 1, k))
+                    + hay * (0.0 - self.ex.idx(i, geometry.num_vox_y - 1, k));
+            }
+        }
 
         Ok(())
     }
