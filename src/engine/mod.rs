@@ -8,10 +8,7 @@
 const ONE_OVER_TWO: f64 = 1.0 / 2.0;
 
 // import local modules and cargo crates
-use crate::{
-    geometry::{self, Geometry},
-    C_0,
-};
+use crate::{geometry::Geometry, C_0};
 use anyhow::{Ok, Result};
 
 #[derive(Debug)]
@@ -27,9 +24,6 @@ pub struct Engine {
 
 impl Engine {
     pub fn new(geometry: &Geometry) -> Result<Engine> {
-        // assign dt to zero as it is not known at compile time
-        let dt: f64 = 0.0;
-
         // assign cur_time to 0 as that is initial state of engine
         let cur_time: f64 = 0.0;
 
@@ -123,6 +117,7 @@ impl Engine {
             self.cur_time += ONE_OVER_TWO * dt;
 
             // update electric field
+            self.update_e(&geometry, &ea, &eb)?;
 
             // update current engine time after electric field update
             self.cur_time += ONE_OVER_TWO * dt;
@@ -272,6 +267,67 @@ impl Engine {
             }
         }
 
+        Ok(())
+    }
+
+    fn update_e(&mut self, geometry: &Geometry, ea: &f64, eb: &f64) -> Result<()> {
+        // update ex
+        self.update_ex(geometry, &ea, &eb)?;
+
+        // update ey
+        self.update_ey(geometry, &ea, &eb)?;
+
+        // update ez
+        self.update_ez(geometry, &ea, &eb)?;
+
+        Ok(())
+    }
+
+    fn update_ex(&mut self, geometry: &Geometry, ea: &f64, eb: &f64) -> Result<()> {
+        for k in 1..geometry.num_vox_z {
+            for j in 1..geometry.num_vox_y {
+                for i in 0..geometry.num_vox_x {
+                    // ex update equation for all non j-low and k-low volume
+                    *self.ex.idxm(i, j, k) = ea
+                        * (eb * self.ex.idx(i, j, k)
+                            + geometry.dy_inv * (self.hz.idx(i, j, k) - self.hz.idx(i, j - 1, k))
+                            - geometry.dz_inv * (self.hy.idx(i, j, k) - self.hy.idx(i, j, k - 1)));
+                }
+            }
+
+            for i in 0..geometry.num_vox_x {
+                // ex update equation for j-low surface
+                *self.ex.idxm(i, 0, k) = ea
+                    * (eb * self.ex.idx(i, 0, k) + geometry.dy_inv * (self.hz.idx(i, 0, k) - 0.0)
+                        - geometry.dz_inv * (self.hy.idx(i, 0, k) - self.hy.idx(i, 0, k - 1)));
+            }
+        }
+
+        for j in 1..geometry.num_vox_y {
+            for i in 0..geometry.num_vox_x {
+                // ex update equation for k-low surface
+                *self.ex.idxm(i, j, 0) = ea
+                    * (eb * self.ex.idx(i, j, 0)
+                        + geometry.dy_inv * (self.hz.idx(i, j, 0) - self.hz.idx(i, j - 1, 0))
+                        - geometry.dz_inv * (self.hy.idx(i, j, 0) - 0.0));
+            }
+        }
+
+        for i in 0..geometry.num_vox_x {
+            // ex update for j-low, k-low line
+            *self.ex.idxm(i, 0, 0) = ea
+                * (eb * self.ex.idx(i, 0, 0) + geometry.dy_inv * (self.hz.idx(i, 0, 0) - 0.0)
+                    - geometry.dz_inv * (self.hy.idx(i, 0, 0) - 0.0));
+        }
+
+        Ok(())
+    }
+
+    fn update_ey(&mut self, geometry: &Geometry, ea: &f64, eb: &f64) -> Result<()> {
+        Ok(())
+    }
+
+    fn update_ez(&mut self, geometry: &Geometry, ea: &f64, eb: &f64) -> Result<()> {
         Ok(())
     }
 }
