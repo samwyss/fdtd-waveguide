@@ -33,10 +33,10 @@ impl Solver {
         let config: Config = Config::new(path_str)?;
 
         // create a new geometry for given configuration (see ./src/geometry/mod.rs)
-        let geometry = Geometry::new(config)?;
+        let geometry = Geometry::new(&config)?;
 
         // create a new engine for the given geometry (see ./src/engine/mod.rs)
-        let engine = Engine::new(&geometry)?;
+        let engine = Engine::new(&geometry, config.snapshot_mod_steps)?;
 
         Ok(Solver { geometry, engine })
     }

@@ -38,7 +38,7 @@ impl Geometry {
     ///
     /// # Errors
     ///
-    pub fn new(config: Config) -> Result<Geometry> {
+    pub fn new(config: &Config) -> Result<Geometry> {
         // assign x_len
         let x_len: f64 = config.x_len;
 

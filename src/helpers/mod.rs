@@ -26,6 +26,7 @@ pub struct Config {
     pub ep_r: f64,  // [] diagonally isotropic relative permittivity inside waveguide
     pub mu_r: f64,  // [] diagonally isotropic relative permeability inside waveguide
     pub sigma: f64, // [S/m] diagonally isotropic conductivity of material
+    pub snapshot_mod_steps: usize // [] simulation will take a snapshot at the timestep mod snapshot_mod_steps, equivalent to saying take a snapshot every snapshot_mod_steps, keep this value very small until you know what you are doing
 }
 
 impl Config {

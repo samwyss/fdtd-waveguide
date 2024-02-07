@@ -24,10 +24,16 @@ pub struct Engine {
     hy: ScalarField,
     hz: ScalarField,
     hx_wtr: csv::Writer<BufWriter<File>>,
+    hy_wtr: csv::Writer<BufWriter<File>>,
+    hz_wtr: csv::Writer<BufWriter<File>>,
+    ex_wtr: csv::Writer<BufWriter<File>>,
+    ey_wtr: csv::Writer<BufWriter<File>>,
+    ez_wtr: csv::Writer<BufWriter<File>>,
+    snapshot_steps: usize,
 }
 
 impl Engine {
-    pub fn new(geometry: &Geometry) -> Result<Engine> {
+    pub fn new(geometry: &Geometry, snapshot_steps: usize) -> Result<Engine> {
         // assign cur_time to 0 as that is initial state of engine
         let cur_time: f64 = 0.0;
 
@@ -84,20 +90,65 @@ impl Engine {
 
         // create paths for output files of all field values
         let hx_path = "./hx.csv";
+        let hy_path = "./hy.csv";
+        let hz_path = "./hz.csv";
+        let ex_path = "./ex.csv";
+        let ey_path = "./ey.csv";
+        let ez_path = "./ez.csv";
 
         // attempt to remove files from previous simulation runs
         let _ = remove_file(&hx_path);
+        let _ = remove_file(&hy_path);
+        let _ = remove_file(&hz_path);
+        let _ = remove_file(&ex_path);
+        let _ = remove_file(&ey_path);
+        let _ = remove_file(&ez_path);
 
         // create file descriptors for all field values
         let hx_file = OpenOptions::new()
             .append(true)
             .create(true)
             .open(&hx_path)?;
+        let hy_file = OpenOptions::new()
+            .append(true)
+            .create(true)
+            .open(&hy_path)?;
+        let hz_file = OpenOptions::new()
+            .append(true)
+            .create(true)
+            .open(&hz_path)?;
+        let ex_file = OpenOptions::new()
+            .append(true)
+            .create(true)
+            .open(&ex_path)?;
+        let ey_file = OpenOptions::new()
+            .append(true)
+            .create(true)
+            .open(&ey_path)?;
+        let ez_file = OpenOptions::new()
+            .append(true)
+            .create(true)
+            .open(&ez_path)?;
 
         // create buffered writers for all field values
         let hx_wtr: csv::Writer<BufWriter<File>> = WriterBuilder::new()
             .has_headers(false)
             .from_writer(BufWriter::new(hx_file));
+        let hy_wtr: csv::Writer<BufWriter<File>> = WriterBuilder::new()
+            .has_headers(false)
+            .from_writer(BufWriter::new(hy_file));
+        let hz_wtr: csv::Writer<BufWriter<File>> = WriterBuilder::new()
+            .has_headers(false)
+            .from_writer(BufWriter::new(hz_file));
+        let ex_wtr: csv::Writer<BufWriter<File>> = WriterBuilder::new()
+            .has_headers(false)
+            .from_writer(BufWriter::new(ex_file));
+        let ey_wtr: csv::Writer<BufWriter<File>> = WriterBuilder::new()
+            .has_headers(false)
+            .from_writer(BufWriter::new(ey_file));
+        let ez_wtr: csv::Writer<BufWriter<File>> = WriterBuilder::new()
+            .has_headers(false)
+            .from_writer(BufWriter::new(ez_file));
 
         Ok(Engine {
             cur_time,
@@ -108,6 +159,12 @@ impl Engine {
             hy,
             hz,
             hx_wtr,
+            hy_wtr,
+            hz_wtr,
+            ex_wtr,
+            ey_wtr,
+            ez_wtr,
+            snapshot_steps,
         })
     }
 
@@ -147,8 +204,15 @@ impl Engine {
             //TODO remove me
             println!("{} of {}", t + 1, time_steps);
 
-            //TODO remove me
-            write_buf_vec(&mut self.hx_wtr, &self.ex.field)?;
+            if t % self.snapshot_steps == 0 {
+                //TODO modularize this
+                write_buf_vec(&mut self.hx_wtr, &self.hx.field)?;
+                write_buf_vec(&mut self.hy_wtr, &self.hy.field)?;
+                write_buf_vec(&mut self.hz_wtr, &self.hz.field)?;
+                write_buf_vec(&mut self.ex_wtr, &self.ex.field)?;
+                write_buf_vec(&mut self.ey_wtr, &self.ey.field)?;
+                write_buf_vec(&mut self.ez_wtr, &self.ez.field)?;
+            }
         }
 
         Ok(())
@@ -319,6 +383,9 @@ impl Engine {
         // update ez
         self.update_ez(geometry, &ea, &eb)?;
 
+        //TODO remove me
+        *self.ex.idxm(30, 30, 15) += 100.0 * ea * eb * -(1e9 * 2.0 * 3.14159 * self.cur_time).sin();
+
         Ok(())
     }
 
@@ -403,32 +470,28 @@ impl Engine {
             // ez update equation for i-low, j-low line
             *self.ez.idxm(0, 0, k) = ea
                 * (eb * self.ez.idx(0, 0, k) + geometry.dx_inv * (self.hy.idx(0, 0, k) - 0.0)
-                    - geometry.dy_inv * (self.hx.idx(0, 0, k) - 0.0)
-                    - (1e9 * 2.0 * 3.14159 * self.cur_time).sin());
+                    - geometry.dy_inv * (self.hx.idx(0, 0, k) - 0.0));
 
             // ez update equation for j-low surface
             for i in 1..geometry.num_vox_x {
                 *self.ez.idxm(i, 0, k) = ea
                     * (eb * self.ez.idx(i, 0, k)
                         + geometry.dx_inv * (self.hy.idx(i, 0, k) - self.hy.idx(i - 1, 0, k))
-                        - geometry.dy_inv * (self.hx.idx(i, 0, k) - 0.0)
-                        - (1e9 * 2.0 * 3.14159 * self.cur_time).sin());
+                        - geometry.dy_inv * (self.hx.idx(i, 0, k) - 0.0));
             }
 
             for j in 1..geometry.num_vox_y {
                 // ez update equation for i-low surface
                 *self.ez.idxm(0, j, k) = ea
                     * (eb * self.ez.idx(0, j, k) + geometry.dx_inv * (self.hy.idx(0, j, k) - 0.0)
-                        - geometry.dy_inv * (self.hx.idx(0, j, k) - self.hx.idx(0, j - 1, k))
-                        - (1e9 * 2.0 * 3.14159 * self.cur_time).sin());
+                        - geometry.dy_inv * (self.hx.idx(0, j, k) - self.hx.idx(0, j - 1, k)));
 
                 for i in 1..geometry.num_vox_x {
                     // ez update equation for all non i-low, j-low volume
                     *self.ez.idxm(i, j, k) = ea
                         * (eb * self.ez.idx(i, j, k)
                             + geometry.dx_inv * (self.hy.idx(i, j, k) - self.hy.idx(i - 1, j, k))
-                            - geometry.dy_inv * (self.hx.idx(i, j, k) - self.hx.idx(i, j - 1, k))
-                            - (1e9 * 2.0 * 3.14159 * self.cur_time).sin());
+                            - geometry.dy_inv * (self.hx.idx(i, j, k) - self.hx.idx(i, j - 1, k)));
                 }
             }
         }
