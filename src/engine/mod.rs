@@ -146,10 +146,10 @@ impl Engine {
 
             //TODO remove me
             println!("{} of {}", t + 1, time_steps);
-        }
 
-        //TODO remove me
-        write_buf_vec(&mut self.hx_wtr, &self.hx.field)?;
+            //TODO remove me
+            write_buf_vec(&mut self.hx_wtr, &self.ex.field)?;
+        }
 
         Ok(())
     }
@@ -403,28 +403,32 @@ impl Engine {
             // ez update equation for i-low, j-low line
             *self.ez.idxm(0, 0, k) = ea
                 * (eb * self.ez.idx(0, 0, k) + geometry.dx_inv * (self.hy.idx(0, 0, k) - 0.0)
-                    - geometry.dy_inv * (self.hx.idx(0, 0, k) - 0.0));
+                    - geometry.dy_inv * (self.hx.idx(0, 0, k) - 0.0)
+                    - (1e9 * 2.0 * 3.14159 * self.cur_time).sin());
 
             // ez update equation for j-low surface
             for i in 1..geometry.num_vox_x {
                 *self.ez.idxm(i, 0, k) = ea
                     * (eb * self.ez.idx(i, 0, k)
                         + geometry.dx_inv * (self.hy.idx(i, 0, k) - self.hy.idx(i - 1, 0, k))
-                        - geometry.dy_inv * (self.hx.idx(i, 0, k) - 0.0));
+                        - geometry.dy_inv * (self.hx.idx(i, 0, k) - 0.0)
+                        - (1e9 * 2.0 * 3.14159 * self.cur_time).sin());
             }
 
             for j in 1..geometry.num_vox_y {
                 // ez update equation for i-low surface
                 *self.ez.idxm(0, j, k) = ea
                     * (eb * self.ez.idx(0, j, k) + geometry.dx_inv * (self.hy.idx(0, j, k) - 0.0)
-                        - geometry.dy_inv * (self.hx.idx(0, j, k) - self.hx.idx(0, j - 1, k)));
+                        - geometry.dy_inv * (self.hx.idx(0, j, k) - self.hx.idx(0, j - 1, k))
+                        - (1e9 * 2.0 * 3.14159 * self.cur_time).sin());
 
                 for i in 1..geometry.num_vox_x {
                     // ez update equation for all non i-low, j-low volume
                     *self.ez.idxm(i, j, k) = ea
                         * (eb * self.ez.idx(i, j, k)
                             + geometry.dx_inv * (self.hy.idx(i, j, k) - self.hy.idx(i - 1, j, k))
-                            - geometry.dy_inv * (self.hx.idx(i, j, k) - self.hx.idx(i, j - 1, k)));
+                            - geometry.dy_inv * (self.hx.idx(i, j, k) - self.hx.idx(i, j - 1, k))
+                            - (1e9 * 2.0 * 3.14159 * self.cur_time).sin());
                 }
             }
         }

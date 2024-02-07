@@ -106,6 +106,9 @@ impl Geometry {
         // assign dz_inv
         let dz_inv: f64 = num_vox_z as f64 / z_len;
 
+        //TODO remove me
+        println!("x-voxels: {}, y-voxels: {}, z-voxels: {}, total: {}", num_vox_x, num_vox_y, num_vox_z, num_vox);
+
         Ok(Geometry {
             ep,
             mu,
