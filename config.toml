@@ -1,5 +1,5 @@
 max_frequency = 1e9             # [Hz] maximium frequency to resolve
-voxels_per_min_wavelength = 50  # [] number of voxels per minimum wavelength
+voxels_per_min_wavelength = 20  # [] number of voxels per minimum wavelength 20-50
 voxels_per_min_feature = 4      # [] number of voxels per minimum feature size
 x_len = 1.0                     # [m] length of waveguide in x-direction
 y_len = 1.0                     # [m] length of waveguide in y-direction
