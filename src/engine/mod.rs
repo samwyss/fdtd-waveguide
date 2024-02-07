@@ -8,7 +8,10 @@
 const ONE_OVER_TWO: f64 = 1.0 / 2.0;
 
 // import local modules and cargo crates
-use crate::{geometry::Geometry, C_0};
+use crate::{
+    geometry::{self, Geometry},
+    C_0,
+};
 use anyhow::{Ok, Result};
 
 #[derive(Debug)]
@@ -146,7 +149,7 @@ impl Engine {
         for k in 0..(geometry.num_vox_z - 1) {
             for j in 0..(geometry.num_vox_y - 1) {
                 for i in 0..geometry.num_vox_x {
-                    // hx update equation for non j-high and k-high volume
+                    // hx update equation for non j-high, k-high volume
                     *self.hz.idxm(i, j, k) += -hay
                         * (&self.ez.idx(i, j + 1, k) - self.ez.idx(i, j, k))
                         + haz * (self.ey.idx(i, j, k + 1) - self.ey.idx(i, j, k));
@@ -196,7 +199,7 @@ impl Engine {
         for k in 0..(geometry.num_vox_z - 1) {
             for j in 0..geometry.num_vox_y {
                 for i in 0..(geometry.num_vox_x - 1) {
-                    // hy update for non i-high and k-high volume
+                    // hy update for non i-high, k-high volume
                     *self.hy.idxm(i, j, k) += -haz
                         * (self.ex.idx(i, j, k + 1) - self.ex.idx(i, j, k))
                         + hax * (self.ez.idx(i + 1, j, k) - self.ez.idx(i, j, k));
@@ -244,7 +247,7 @@ impl Engine {
         for k in 0..geometry.num_vox_z {
             for j in 0..(geometry.num_vox_y - 1) {
                 for i in 0..(geometry.num_vox_x - 1) {
-                    // hz update for non i-high and j-high volume
+                    // hz update for non i-high, j-high volume
                     *self.hz.idxm(i, j, k) += -hax
                         * (self.ey.idx(i + 1, j, k) - self.ey.idx(i, j, k))
                         + hay * (self.ex.idx(i, j + 1, k) - self.ex.idx(i, j, k));
@@ -265,6 +268,20 @@ impl Engine {
                         - self.ey.idx(i, geometry.num_vox_y - 1, k))
                     + hay * (0.0 - self.ex.idx(i, geometry.num_vox_y - 1, k));
             }
+
+            // hz update equation for i-high, j-high line
+            *self
+                .hz
+                .idxm(geometry.num_vox_x - 1, geometry.num_vox_y - 1, k) += -hax
+                * (0.0
+                    - self
+                        .ey
+                        .idx(geometry.num_vox_x - 1, geometry.num_vox_y - 1, k))
+                + hay
+                    * (0.0
+                        - self
+                            .ex
+                            .idx(geometry.num_vox_x - 1, geometry.num_vox_y - 1, k));
         }
 
         Ok(())
@@ -287,7 +304,7 @@ impl Engine {
         for k in 1..geometry.num_vox_z {
             for j in 1..geometry.num_vox_y {
                 for i in 0..geometry.num_vox_x {
-                    // ex update equation for all non j-low and k-low volume
+                    // ex update equation for all non j-low, k-low volume
                     *self.ex.idxm(i, j, k) = ea
                         * (eb * self.ex.idx(i, j, k)
                             + geometry.dy_inv * (self.hz.idx(i, j, k) - self.hz.idx(i, j - 1, k))
@@ -333,7 +350,7 @@ impl Engine {
                         - geometry.dx_inv * (self.hz.idx(0, j, k) - 0.0));
 
                 for i in 1..geometry.num_vox_x {
-                    // ey update equation for all non i-low and k-low volume
+                    // ey update equation for all non i-low k-low volume
                     *self.ey.idxm(i, j, k) = ea
                         * (eb * self.ey.idx(i, j, k)
                             + geometry.dz_inv * (self.hx.idx(i, j, k) - self.hx.idx(i, j, k - 1))
@@ -360,6 +377,36 @@ impl Engine {
     }
 
     fn update_ez(&mut self, geometry: &Geometry, ea: &f64, eb: &f64) -> Result<()> {
+        for k in 0..geometry.num_vox_z {
+            // ez update equation for i-low, j-low line
+            *self.ez.idxm(0, 0, k) = ea
+                * (eb * self.ez.idx(0, 0, k) + geometry.dx_inv * (self.hy.idx(0, 0, k) - 0.0)
+                    - geometry.dy_inv * (self.hx.idx(0, 0, k) - 0.0));
+
+            // ez update equation for j-low surface
+            for i in 1..geometry.num_vox_x {
+                *self.ez.idxm(i, 0, k) = ea
+                    * (eb * self.ez.idx(i, 0, k)
+                        + geometry.dx_inv * (self.hy.idx(i, 0, k) - self.hy.idx(i - 1, 0, k))
+                        - geometry.dy_inv * (self.hx.idx(i, 0, k) - 0.0));
+            }
+
+            for j in 1..geometry.num_vox_y {
+                // ez update equation for i-low surface
+                *self.ez.idxm(0, j, k) = ea
+                    * (eb * self.ez.idx(0, j, k) + geometry.dx_inv * (self.hy.idx(0, j, k) - 0.0)
+                        - geometry.dy_inv * (self.hx.idx(0, j, k) - self.hx.idx(0, j - 1, k)));
+
+                for i in 1..geometry.num_vox_x {
+                    // ez update equation for all non i-low, j-low volume
+                    *self.ez.idxm(i, j, k) = ea
+                        * (eb * self.ez.idx(i, j, k)
+                            + geometry.dx_inv * (self.hy.idx(i, j, k) - self.hy.idx(i - 1, j, k))
+                            - geometry.dy_inv * (self.hx.idx(i, j, k) - self.hx.idx(i, j - 1, k)));
+                }
+            }
+        }
+
         Ok(())
     }
 }
