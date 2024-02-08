@@ -105,9 +105,9 @@ from multiprocessing import Pool
 # Function to render a single frame
 def render_frame(args):
     # Set the fixed range for the colormap
-    size_x = 9
-    size_y = 5
-    size_z = 67
+    size_x = 17
+    size_y = 17
+    size_z = 17
     vmine = -0.01
     vmaxe = 0.01
     vminh = -0.00001
