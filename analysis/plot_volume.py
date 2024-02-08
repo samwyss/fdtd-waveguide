@@ -12,9 +12,9 @@ def make_video(data_arrays):
     # where each row represents a different time step
 
     # define constants
-    size_x = 67
-    size_y = 67
-    size_z = 67
+    size_x = 34
+    size_y = 34
+    size_z = 34
     vmin = -1
     vmax = 1
     cmap = cm.coolwarm
@@ -105,13 +105,13 @@ from multiprocessing import Pool
 # Function to render a single frame
 def render_frame(args):
     # Set the fixed range for the colormap
-    size_x = 34
-    size_y = 34
-    size_z = 34
-    vmine = -10
-    vmaxe = 10
-    vminh = -0.01
-    vmaxh = 0.01
+    size_x = 9
+    size_y = 5
+    size_z = 67
+    vmine = -0.01
+    vmaxe = 0.01
+    vminh = -0.00001
+    vmaxh = 0.00001
     cmap = cm.coolwarm
     t, data_arrays = args
     # Create a 3D figure
@@ -151,7 +151,7 @@ def render_frame(args):
 
         # Create a color array using a colormap
 
-        if i % 2 == 0:
+        if i >= 2 == 1:
             colors = cmap((voxels - vmine) / (vmaxe - vmine))
         else:
             colors = cmap((voxels - vminh) / (vmaxh - vminh))
@@ -160,7 +160,7 @@ def render_frame(args):
         ax.voxels(x, y, z, mask, facecolors=colors)
 
         # Create a ScalarMappable object for the color bar
-        if i % 2 == 0:
+        if i >= 3:
             sm = plt.cm.ScalarMappable(
                 cmap=cmap, norm=Normalize(vmin=vmine, vmax=vmaxe)
             )
