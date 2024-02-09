@@ -38,3 +38,6 @@ Cargo.lock
 *.fls
 *.gz
 *.toc
+
+# data output folders from model
+out/

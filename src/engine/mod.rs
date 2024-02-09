@@ -11,7 +11,7 @@ const ONE_OVER_TWO: f64 = 1.0 / 2.0;
 use crate::{geometry::Geometry, helpers::write_buf_vec, C_0};
 use anyhow::{Ok, Result};
 use csv::WriterBuilder;
-use std::fs::{remove_file, File, OpenOptions};
+use std::fs::{create_dir, remove_dir_all, remove_file, File, OpenOptions};
 use std::io::BufWriter;
 
 #[derive(Debug)]
@@ -88,21 +88,19 @@ impl Engine {
             geometry.num_vox_y,
         )?;
 
-        // create paths for output files of all field values
-        let hx_path = "./hx.csv";
-        let hy_path = "./hy.csv";
-        let hz_path = "./hz.csv";
-        let ex_path = "./ex.csv";
-        let ey_path = "./ey.csv";
-        let ez_path = "./ez.csv";
+        // remove results from previous simulation runs
+        let _ = remove_dir_all("./out");
 
-        // attempt to remove files from previous simulation runs
-        let _ = remove_file(&hx_path);
-        let _ = remove_file(&hy_path);
-        let _ = remove_file(&hz_path);
-        let _ = remove_file(&ex_path);
-        let _ = remove_file(&ey_path);
-        let _ = remove_file(&ez_path);
+        // make new out directory for simulation results
+        create_dir("./out")?;
+
+        // create paths for output files of all field values
+        let hx_path = "./out/hx.csv";
+        let hy_path = "./out/hy.csv";
+        let hz_path = "./out/hz.csv";
+        let ex_path = "./out/ex.csv";
+        let ey_path = "./out/ey.csv";
+        let ez_path = "./out/ez.csv";
 
         // create file descriptors for all field values
         let hx_file = OpenOptions::new()
