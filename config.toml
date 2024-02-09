@@ -7,4 +7,4 @@ z_len = 1                    # [m] length of waveguide in z-direction (direction
 ep_r = 1                        # [] diagonally isotropic relative permittivity inside waveguide 
 mu_r = 1                        # [] diagonally isotropic relative permeability inside waveguide
 sigma = 0                       # [S/m] diagonally isotropic conductivity of material
-snapshot_mod_steps = 50        # [] simulation will take a snapshot at the timestep mod snapshot_mod_steps, equivalent to saying take a snapshot every snapshot_mod_steps, keep this value very small until you know what you are doing
+snapshot_mod_steps = 5        # [] simulation will take a snapshot at the timestep mod snapshot_mod_steps, equivalent to saying take a snapshot every snapshot_mod_steps, keep this value very small until you know what you are doing

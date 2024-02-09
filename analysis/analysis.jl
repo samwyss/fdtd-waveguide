@@ -9,16 +9,13 @@ data = readdlm("./ex.csv", ',', Float64, '\n')
 x_size = 67
 y_size = 67
 z_size = 67
-x_len = 0.5
-y_len = 0.5
-z_len = 0.5
 
 fig = Figure()
 ax = LScene(fig[1, 1], show_axis=false)
 
-x = LinRange(1, x_len, x_size)
-y = LinRange(1, y_len, y_size)
-z = LinRange(1, z_len, z_size)
+x = LinRange(1, x_size, x_size)
+y = LinRange(1, y_size, y_size)
+z = LinRange(1, z_size, z_size)
 
 time = Observable(1)
 
@@ -40,7 +37,7 @@ data_slice = @lift(data[$time, :])
 data_vol = @lift(reshape($data_slice, (x_size, y_size, z_size)))
 
 vol = data_vol#[cos(X)*sin(Y)*sin(Z) for X ∈ x, Y ∈ y, Z ∈ z]
-plt = volumeslices!(ax, x, y, z, vol, colormap=:coolwarm, colorrange=(-0.1,0.1)) # interpolate=true
+plt = volumeslices!(ax, x, y, z, vol, colormap=:coolwarm, colorrange=(-0.1,0.1), interpolate=true)
 
 # connect sliders to `volumeslices` update methods
 sl_yz, sl_xz, sl_xy = sgrid.sliders

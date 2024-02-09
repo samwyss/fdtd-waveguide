@@ -8,7 +8,7 @@ fn main() -> Result<()> {
     let mut solver = Solver::new("./config.toml")?;
 
     // update solver to a target_time
-    solver.update(5e-9)?;
+    solver.update(1e-9)?;
 
     Ok(())
 }

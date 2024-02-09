@@ -384,9 +384,9 @@ impl Engine {
         self.update_ez(geometry, &ea, &eb)?;
 
         //TODO remove me
-        for j in 0..geometry.num_vox_y {
-            for i in 0..geometry.num_vox_y {
-                *self.ex.idxm(i, j, 0) += -(1e9 * 2.0 * 3.14159 * self.cur_time).sin();
+        for j in 30..38 {
+            for i in 30..38 {
+                *self.ex.idxm(i, j, 1) += -(1e9 * 2.0 * 3.14159 * self.cur_time).sin();
             }
         }
         //*self.ex.idxm(8, 8, 8) += -(1e9 * 2.0 * 3.14159 * self.cur_time).sin();
@@ -397,7 +397,8 @@ impl Engine {
     fn update_ex(&mut self, geometry: &Geometry, ea: &f64, eb: &f64) -> Result<()> {
         for k in 1..geometry.num_vox_z {
             for j in 1..geometry.num_vox_y {
-                for i in 0..geometry.num_vox_x {
+                // 0 is inside PEC
+                for i in 1..geometry.num_vox_x {
                     // ex update equation for all non j-low, k-low volume
                     *self.ex.idxm(i, j, k) = ea
                         * (eb * self.ex.idx(i, j, k)
@@ -405,15 +406,16 @@ impl Engine {
                             - geometry.dz_inv * (self.hy.idx(i, j, k) - self.hy.idx(i, j, k - 1)));
                 }
             }
-
+            /* Removed as these field components stretch into PEC
             for i in 0..geometry.num_vox_x {
                 // ex update equation for j-low surface
                 *self.ex.idxm(i, 0, k) = ea
                     * (eb * self.ex.idx(i, 0, k) + geometry.dy_inv * (self.hz.idx(i, 0, k) - 0.0)
                         - geometry.dz_inv * (self.hy.idx(i, 0, k) - self.hy.idx(i, 0, k - 1)));
             }
+            */
         }
-
+        /* Removed as these field components stretch into PEC
         for j in 1..geometry.num_vox_y {
             for i in 0..geometry.num_vox_x {
                 // ex update equation for k-low surface
@@ -430,18 +432,22 @@ impl Engine {
                 * (eb * self.ex.idx(i, 0, 0) + geometry.dy_inv * (self.hz.idx(i, 0, 0) - 0.0)
                     - geometry.dz_inv * (self.hy.idx(i, 0, 0) - 0.0));
         }
+        */
 
         Ok(())
     }
 
     fn update_ey(&mut self, geometry: &Geometry, ea: &f64, eb: &f64) -> Result<()> {
         for k in 1..geometry.num_vox_z {
-            for j in 0..geometry.num_vox_y {
+            // 0 is inside PEC
+            for j in 1..geometry.num_vox_y {
+                /* Removed as these field components stretch into PEC
                 // ey update equation for i-low surface
                 *self.ey.idxm(0, j, k) = ea
                     * (eb * self.ey.idx(0, j, k)
                         + geometry.dz_inv * (self.hx.idx(0, j, k) - self.hx.idx(0, j, k - 1))
                         - geometry.dx_inv * (self.hz.idx(0, j, k) - 0.0));
+                */
 
                 for i in 1..geometry.num_vox_x {
                     // ey update equation for all non i-low, k-low volume
@@ -452,7 +458,7 @@ impl Engine {
                 }
             }
         }
-
+        /* Removed as these field components stretch into PEC
         for j in 0..geometry.num_vox_y {
             // ey update equation for i-low, k-low line
             *self.ey.idxm(0, j, 0) = ea
@@ -466,12 +472,15 @@ impl Engine {
                         - geometry.dx_inv * (self.hz.idx(i, j, 0) - self.hz.idx(i - 1, j, 0)));
             }
         }
+        */
 
         Ok(())
     }
 
     fn update_ez(&mut self, geometry: &Geometry, ea: &f64, eb: &f64) -> Result<()> {
-        for k in 0..geometry.num_vox_z {
+        // 0 is inside PEC
+        for k in 1..geometry.num_vox_z {
+            /* Removed as these field components stretch into PEC
             // ez update equation for i-low, j-low line
             *self.ez.idxm(0, 0, k) = ea
                 * (eb * self.ez.idx(0, 0, k) + geometry.dx_inv * (self.hy.idx(0, 0, k) - 0.0)
@@ -484,13 +493,15 @@ impl Engine {
                         + geometry.dx_inv * (self.hy.idx(i, 0, k) - self.hy.idx(i - 1, 0, k))
                         - geometry.dy_inv * (self.hx.idx(i, 0, k) - 0.0));
             }
+            */
 
             for j in 1..geometry.num_vox_y {
+                /* Removed as these field components stretch into PEC
                 // ez update equation for i-low surface
                 *self.ez.idxm(0, j, k) = ea
                     * (eb * self.ez.idx(0, j, k) + geometry.dx_inv * (self.hy.idx(0, j, k) - 0.0)
                         - geometry.dy_inv * (self.hx.idx(0, j, k) - self.hx.idx(0, j - 1, k)));
-
+                */
                 for i in 1..geometry.num_vox_x {
                     // ez update equation for all non i-low, j-low volume
                     *self.ez.idxm(i, j, k) = ea
