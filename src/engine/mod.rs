@@ -182,6 +182,10 @@ impl Engine {
         let hay: f64 = dt * geometry.dy_inv / geometry.mu;
         let haz: f64 = dt * geometry.dz_inv / geometry.mu;
 
+        // log basic time loop stats to stdout
+        println!("time steps: {}, dt: {}[s]", time_steps, dt);
+        println!("beginning time loop");
+
         // time loop
         for t in 0..time_steps {
             // update magnetic field
@@ -196,19 +200,36 @@ impl Engine {
             // update current engine time after electric field update
             self.cur_time += ONE_OVER_TWO * dt;
 
-            //TODO remove me
-            println!("{} of {}", t + 1, time_steps);
-
             if t % self.snapshot_steps == 0 {
-                //TODO modularize this
-                write_buf_vec(&mut self.hx_wtr, &self.hx.field)?;
-                write_buf_vec(&mut self.hy_wtr, &self.hy.field)?;
-                write_buf_vec(&mut self.hz_wtr, &self.hz.field)?;
-                write_buf_vec(&mut self.ex_wtr, &self.ex.field)?;
-                write_buf_vec(&mut self.ey_wtr, &self.ey.field)?;
-                write_buf_vec(&mut self.ez_wtr, &self.ez.field)?;
+                self.snapshot_fields()?;
             }
         }
+
+        // flush any remaining data in buffers
+        print!("flushing remaining data in buffers");
+        self.flush_fields()?;
+
+        Ok(())
+    }
+
+    fn snapshot_fields(&mut self) -> Result<()> {
+        write_buf_vec(&mut self.hx_wtr, &self.hx.field)?;
+        write_buf_vec(&mut self.hy_wtr, &self.hy.field)?;
+        write_buf_vec(&mut self.hz_wtr, &self.hz.field)?;
+        write_buf_vec(&mut self.ex_wtr, &self.ex.field)?;
+        write_buf_vec(&mut self.ey_wtr, &self.ey.field)?;
+        write_buf_vec(&mut self.ez_wtr, &self.ez.field)?;
+
+        Ok(())
+    }
+
+    fn flush_fields(&mut self) -> Result<()> {
+        self.hx_wtr.flush()?;
+        self.hx_wtr.flush()?;
+        self.hy_wtr.flush()?;
+        self.ex_wtr.flush()?;
+        self.ey_wtr.flush()?;
+        self.ez_wtr.flush()?;
 
         Ok(())
     }
