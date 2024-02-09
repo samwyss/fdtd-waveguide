@@ -2,7 +2,7 @@ using GLMakie
 using DelimitedFiles
 
 # load data
-data = readdlm("./ex.csv", ',', Float64, '\n')
+data = readdlm("./out/ex.csv", ',', Float64, '\n')
 
 # constants
 #time = 4
