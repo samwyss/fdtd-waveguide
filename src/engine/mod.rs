@@ -11,7 +11,7 @@ const ONE_OVER_TWO: f64 = 1.0 / 2.0;
 use crate::{geometry::Geometry, helpers::write_buf_vec, C_0};
 use anyhow::{Ok, Result};
 use csv::WriterBuilder;
-use std::fs::{create_dir, remove_dir_all, remove_file, File, OpenOptions};
+use std::fs::{create_dir, remove_dir_all, File, OpenOptions};
 use std::io::BufWriter;
 
 #[derive(Debug)]
@@ -36,9 +36,6 @@ impl Engine {
     pub fn new(geometry: &Geometry, snapshot_steps: usize) -> Result<Engine> {
         // assign cur_time to 0 as that is initial state of engine
         let cur_time: f64 = 0.0;
-
-        // extract num_vox
-        let num_vox = geometry.num_vox;
 
         // assign ex to 0 as that is initial state of engine
         let ex: ScalarField = ScalarField::new(
