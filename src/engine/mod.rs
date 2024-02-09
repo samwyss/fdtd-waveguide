@@ -384,14 +384,12 @@ impl Engine {
         self.update_ez(geometry, &ea, &eb)?;
 
         //TODO remove me
-        /*
         for j in 0..geometry.num_vox_y {
             for i in 0..geometry.num_vox_y {
-                *self.ex.idxm(i, j, geometry.num_vox_z - 1) += -(1e9 * 2.0 * 3.14159 * self.cur_time).sin();
+                *self.ex.idxm(i, j, 0) += -(1e9 * 2.0 * 3.14159 * self.cur_time).sin();
             }
         }
-        */
-        *self.ex.idxm(8, 8, 8) += -(1e9 * 2.0 * 3.14159 * self.cur_time).sin();
+        //*self.ex.idxm(8, 8, 8) += -(1e9 * 2.0 * 3.14159 * self.cur_time).sin();
 
         Ok(())
     }
