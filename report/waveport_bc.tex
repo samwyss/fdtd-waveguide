@@ -1,0 +1,121 @@
+\section{Waveport Boundary Condition}
+\label{sec:wavebc}
+
+The following is not necessarily written using the proper prose as mentioned in lecture. This is just a derivation, I will re-word this later.
+
+Starting with (3.3.34) in Ch. 9 of our textbook
+\begin{align}
+    \textbf{E}(u,v,w) = \textbf{E}^{inc}(u,v,w) + \textbf{E}^{ref}(u,v,w).
+\end{align}
+
+Substituting in the $\textbf{e}_{10}$ definition in (9.3.35) yields the following
+\begin{align}
+    \textbf{E}(u,v,w) = \hat{v}E_0\sin{\frac{\pi u}{a}} + \hat{v}RE_0\sin{\frac{\pi u}{a}}.
+\end{align} 
+where $R$ is the reflection coefficient and $a$ is the width of the waveguide.
+
+This can be cleanly written in vector notation as
+\begin{align}
+    \textbf{E}(u,v,w) =\begin{bmatrix}
+        0 \\
+        E_0\sin{\frac{\pi u}{a}}(1+R)\\
+        0
+    \end{bmatrix} =\begin{bmatrix}
+        0 \\
+        c(u)(1+R)\\
+        0
+    \end{bmatrix}.
+\end{align}
+
+With 
+\begin{align}
+    \textbf{E}^{inc}(u,v,w) =\begin{bmatrix}
+        0 \\
+        c(u)\\
+        0
+    \end{bmatrix}.
+\end{align}
+
+The waveport source boundary condition as found in (9.3.37) is 
+\begin{align}
+    \hat{n}\times(\nabla\times\textbf{E})+j\beta\hat{n}\times(\hat{n}\times\textbf{E})=-2j\beta\textbf{E}^{inc}.
+    \label{wavbc}
+\end{align}
+
+Substituting the above field definitions into \ref*{wavbc} yields the following
+\begin{multline}
+    \hat{n} \times \left(\nabla \times \begin{bmatrix}
+        0 \\
+        c(u)(1+R)\\
+        0
+    \end{bmatrix}\right) \\ +j\beta\hat{n}\times\left(\hat{n} \times \begin{bmatrix}
+        0 \\
+        c(u)(1+R)\\
+        0
+    \end{bmatrix}\right) \\ =-2j\beta\begin{bmatrix}
+        0 \\
+        c(u)\\
+        0
+    \end{bmatrix}.
+    \label{wavbcvec}
+\end{multline}
+
+Assuming $\hat{u},\hat{v},\hat{w}$ form an orthogonal, right-handed set of basis vectors with $\hat{n}=\hat{w}$ as it is normal to the waveport surface in the direction of propagation \ref*{wavbcvec} becomes
+\begin{multline}
+    \begin{bmatrix}
+        0 \\ 0 \\ 1
+    \end{bmatrix} \times \left(
+        \begin{bmatrix}
+            \partial_x \\ 
+            \partial_y \\
+            \partial_z \\ 
+        \end{bmatrix} \times 
+    \begin{bmatrix}
+        0 \\
+        c(u)(1+R)\\
+        0
+    \end{bmatrix}\right) \\ +j\beta 
+    \begin{bmatrix}
+        0 \\ 0 \\ 1
+    \end{bmatrix} \times \left(
+        \begin{bmatrix}
+            0 \\ 0 \\ 1
+        \end{bmatrix} \times 
+    \begin{bmatrix}
+        0 \\
+        c(u)(1+R)\\
+        0
+    \end{bmatrix}\right) \\ =-2j\beta
+    \begin{bmatrix}
+        0 \\
+        c(u)\\
+        0
+    \end{bmatrix}.
+\end{multline}.
+
+Evaluating the first set of cross products results in 
+\begin{multline}
+    \begin{bmatrix}
+        0 \\ 0 \\ 1
+    \end{bmatrix} \times
+    \begin{bmatrix}
+        0 \\
+        0 \\
+        \partial_u(c(u)(1+R))
+    \end{bmatrix} \\ +j\beta 
+    \begin{bmatrix}
+        0 \\ 0 \\ 1
+    \end{bmatrix} \times
+    \begin{bmatrix}
+        -c(u)(1+R) \\
+        0\\
+        0
+    \end{bmatrix} \\ =-2j\beta
+    \begin{bmatrix}
+        0 \\
+        c(u)\\
+        0
+    \end{bmatrix}.
+\end{multline}
+
+this creates a problem as the spatial derivative drops
