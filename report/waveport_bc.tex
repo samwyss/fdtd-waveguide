@@ -42,7 +42,7 @@ The waveport source boundary condition as found in (9.3.37) is
     \label{wavbc}
 \end{align}
 
-Substituting the above field definitions into \ref*{wavbc} yields the following
+Substituting the above field definitions into \ref{wavbc} yields the following
 \begin{multline}
     \hat{n} \times \left(\nabla \times \begin{bmatrix}
         0 \\
@@ -60,7 +60,7 @@ Substituting the above field definitions into \ref*{wavbc} yields the following
     \label{wavbcvec}
 \end{multline}
 
-Assuming $\hat{u},\hat{v},\hat{w}$ form an orthogonal, right-handed set of basis vectors with $\hat{n}=\hat{w}$ as it is normal to the waveport surface in the direction of propagation \ref*{wavbcvec} becomes
+Assuming $\hat{u},\hat{v},\hat{w}$ form an orthogonal, right-handed set of basis vectors with $\hat{n}=\hat{w}$ as it is normal to the waveport surface in the direction of propagation \ref{wavbcvec} becomes
 \begin{multline}
     \begin{bmatrix}
         0 \\ 0 \\ 1
@@ -91,7 +91,7 @@ Assuming $\hat{u},\hat{v},\hat{w}$ form an orthogonal, right-handed set of basis
         c(u)e^{-j\beta w}\\
         0
     \end{bmatrix}.
-\end{multline}.
+\end{multline}
 
 Evaluating the first set of cross products results in 
 \begin{multline}
@@ -139,10 +139,34 @@ Evaluating the second set of cross products equals
 
 Resulting in the following expression for the $\hat{v}$ direction
 \begin{multline}
-    -\partial_w(c(u)(e^{-j\beta w}+Re^{j\beta w}))-  \\ j\beta c(u)(e^{-j\beta w}+Re^{j\beta w}) \\ =-2j\beta c(u)e^{-j\beta w}.
+    -\partial_w(c(u)(e^{-j\beta w}+Re^{j\beta w})) \\ - j\beta c(u)(e^{-j\beta w}+Re^{j\beta w}) \\ =-2j\beta c(u)e^{-j\beta w}.
 \end{multline}
 
 Which is equal to
 \begin{align}
     \partial_w E_v+j\beta E_v =2j\beta E_v^{inc}.
 \end{align}
+
+Substituting in the definition of beta yields
+
+\begin{align}
+    \partial_w E_v+j\sqrt{k^2-\frac{\pi^2}{a^2}} E_v =2j\sqrt{k^2-\frac{\pi^2}{a^2}} E_v^{inc}.
+\end{align}
+
+Pulling out $k=\frac{\omega\sqrt{\mu\epsilon}}{c_0}$ from square roots yields
+
+\begin{multline}
+    \partial_w E_v+j\omega\frac{\sqrt{\mu\epsilon}}{c_0}\sqrt{1-\frac{\pi^2}{k^2a^2}} E_v \\ =2j\omega\frac{\sqrt{\mu\epsilon}}{c_0}\sqrt{1-\frac{\pi^2}{k^2a^2}} E_v^{inc}.
+\end{multline}
+
+Using the second order approximation of $\partial_w E_v\approx-j\omega\frac{\sqrt{\mu\epsilon}}{c_0}\sqrt{1-\frac{\pi^2}{k^2a^2}}E_v$ the above becomes
+\begin{multline}
+    -j\omega\frac{\sqrt{\mu\epsilon}}{c_0}\sqrt{1-\frac{\pi^2}{k^2a^2}}E_v+j\omega\frac{\sqrt{\mu\epsilon}}{c_0}\sqrt{1-\frac{\pi^2}{k^2a^2}} E_v \\ =2j\omega\frac{\sqrt{\mu\epsilon}}{c_0}\sqrt{1-\frac{\pi^2}{k^2a^2}} E_v^{inc}.
+\end{multline}
+
+Canceling out like terms gives
+\begin{align}
+    E_v = E_v^{inc}.
+\end{align}
+
+Which feels incorrect but is true for $R=0$.
