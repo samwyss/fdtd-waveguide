@@ -402,7 +402,7 @@ impl Engine {
         //TODO remove me
         for j in 30..38 {
             for i in 30..38 {
-                *self.ex.idxm(i, j, 1) += -(1e9 * 2.0 * 3.14159 * self.cur_time).sin();
+                *self.ex.idxm(i, j, 1) += (1e9 * 2.0 * 3.14159 * self.cur_time).sin();
             }
         }
         //*self.ex.idxm(8, 8, 8) += -(1e9 * 2.0 * 3.14159 * self.cur_time).sin();

@@ -10,28 +10,28 @@ Starting with (3.3.34) in Ch. 9 of our textbook
 
 Substituting in the $\textbf{e}_{10}$ definition in (9.3.35) yields the following
 \begin{align}
-    \textbf{E}(u,v,w) = \hat{v}E_0\sin{\frac{\pi u}{a}} + \hat{v}RE_0\sin{\frac{\pi u}{a}}.
+    \textbf{E}(u,v,w) = \hat{v}E_0\sin{\frac{\pi u}{a}} e^{-j\beta w} + \hat{v}RE_0\sin{\frac{\pi u}{a}} e^{j\beta w}.
 \end{align} 
 where $R$ is the reflection coefficient and $a$ is the width of the waveguide.
 
 This can be cleanly written in vector notation as
-\begin{align}
+\begin{multline}
     \textbf{E}(u,v,w) =\begin{bmatrix}
         0 \\
-        E_0\sin{\frac{\pi u}{a}}(1+R)\\
+        E_0\sin{\frac{\pi u}{a}}(e^{-j\beta w}+Re^{j\beta w})\\
         0
-    \end{bmatrix} =\begin{bmatrix}
+    \end{bmatrix}  \\ =\begin{bmatrix}
         0 \\
-        c(u)(1+R)\\
+        c(u)(e^{-j\beta w}+Re^{j\beta w})\\
         0
     \end{bmatrix}.
-\end{align}
+\end{multline}
 
 With 
 \begin{align}
     \textbf{E}^{inc}(u,v,w) =\begin{bmatrix}
         0 \\
-        c(u)\\
+        c(u)e^{-j\beta w}\\
         0
     \end{bmatrix}.
 \end{align}
@@ -46,15 +46,15 @@ Substituting the above field definitions into \ref*{wavbc} yields the following
 \begin{multline}
     \hat{n} \times \left(\nabla \times \begin{bmatrix}
         0 \\
-        c(u)(1+R)\\
+        c(u)(e^{-j\beta w}+Re^{j\beta w})\\
         0
     \end{bmatrix}\right) \\ +j\beta\hat{n}\times\left(\hat{n} \times \begin{bmatrix}
         0 \\
-        c(u)(1+R)\\
+        c(u)(e^{-j\beta w}+Re^{j\beta w})\\
         0
     \end{bmatrix}\right) \\ =-2j\beta\begin{bmatrix}
         0 \\
-        c(u)\\
+        c(u)e^{-j\beta w}\\
         0
     \end{bmatrix}.
     \label{wavbcvec}
@@ -66,13 +66,13 @@ Assuming $\hat{u},\hat{v},\hat{w}$ form an orthogonal, right-handed set of basis
         0 \\ 0 \\ 1
     \end{bmatrix} \times \left(
         \begin{bmatrix}
-            \partial_x \\ 
-            \partial_y \\
-            \partial_z \\ 
+            \partial_u \\ 
+            \partial_v \\
+            \partial_w \\ 
         \end{bmatrix} \times 
     \begin{bmatrix}
         0 \\
-        c(u)(1+R)\\
+        c(u)(e^{-j\beta w}+Re^{j\beta w})\\
         0
     \end{bmatrix}\right) \\ +j\beta 
     \begin{bmatrix}
@@ -83,12 +83,12 @@ Assuming $\hat{u},\hat{v},\hat{w}$ form an orthogonal, right-handed set of basis
         \end{bmatrix} \times 
     \begin{bmatrix}
         0 \\
-        c(u)(1+R)\\
+        c(u)(e^{-j\beta w}+Re^{j\beta w})\\
         0
     \end{bmatrix}\right) \\ =-2j\beta
     \begin{bmatrix}
         0 \\
-        c(u)\\
+        c(u)e^{-j\beta w}\\
         0
     \end{bmatrix}.
 \end{multline}.
@@ -99,23 +99,50 @@ Evaluating the first set of cross products results in
         0 \\ 0 \\ 1
     \end{bmatrix} \times
     \begin{bmatrix}
+        -\partial_w(c(u)(e^{-j\beta w}+Re^{j\beta w})) \\
         0 \\
-        0 \\
-        \partial_u(c(u)(1+R))
+        \partial_u(c(u)(e^{-j\beta w}+Re^{j\beta w}))
     \end{bmatrix} \\ +j\beta 
     \begin{bmatrix}
         0 \\ 0 \\ 1
     \end{bmatrix} \times
     \begin{bmatrix}
-        -c(u)(1+R) \\
+        -c(u)(e^{-j\beta w}+Re^{j\beta w}) \\
         0\\
         0
     \end{bmatrix} \\ =-2j\beta
     \begin{bmatrix}
         0 \\
-        c(u)\\
+        c(u)e^{-j\beta w}\\
         0
     \end{bmatrix}.
 \end{multline}
 
-this creates a problem as the spatial derivative drops
+Evaluating the second set of cross products equals
+\begin{multline}
+    \begin{bmatrix}
+        0 \\
+        -\partial_w(c(u)(e^{-j\beta w}+Re^{j\beta w})) \\
+        0 \\ 
+    \end{bmatrix} \\ +j\beta 
+    \begin{bmatrix}
+        0  \\
+        -c(u)(e^{-j\beta w}+Re^{j\beta w})\\
+        0
+    \end{bmatrix} \\ =-2j\beta
+    \begin{bmatrix}
+        0 \\
+        c(u)e^{-j\beta w}\\
+        0
+    \end{bmatrix}.
+\end{multline}
+
+Resulting in the following expression for the $\hat{v}$ direction
+\begin{multline}
+    -\partial_w(c(u)(e^{-j\beta w}+Re^{j\beta w}))-  \\ j\beta c(u)(e^{-j\beta w}+Re^{j\beta w}) \\ =-2j\beta c(u)e^{-j\beta w}.
+\end{multline}
+
+Which is equal to
+\begin{align}
+    \partial_w E_v+j\beta E_v =2j\beta E_v^{inc}.
+\end{align}
