@@ -6,11 +6,13 @@
 
 // constant declarations
 const ONE_OVER_TWO: f64 = 1.0 / 2.0;
+const TFSF_SRC_END_OFFSET: usize = 3;
 
 // import local modules and cargo crates
 use crate::{geometry::Geometry, helpers::write_buf_vec, C_0};
 use anyhow::{Ok, Result};
 use csv::WriterBuilder;
+use std::f64::consts::{PI, TAU};
 use std::fs::{create_dir, remove_dir_all, File, OpenOptions};
 use std::io::BufWriter;
 
@@ -191,6 +193,9 @@ impl Engine {
             // update magnetic field
             self.update_h(&geometry, &hax, &hay, &haz)?;
 
+            // update TFSF source
+            self.update_tfsf_source(&geometry, &haz)?;
+
             // update current engine time after magnetic field update
             self.cur_time += ONE_OVER_TWO * dt;
 
@@ -253,7 +258,7 @@ impl Engine {
                 for i in 0..geometry.num_vox_x {
                     // hx update equation for non j-high, k-high volume
                     *self.hx.idxm(i, j, k) += -hay
-                        * (&self.ez.idx(i, j + 1, k) - self.ez.idx(i, j, k))
+                        * (self.ez.idx(i, j + 1, k) - self.ez.idx(i, j, k))
                         + haz * (self.ey.idx(i, j, k + 1) - self.ey.idx(i, j, k));
                 }
             }
@@ -272,7 +277,7 @@ impl Engine {
             for i in 0..geometry.num_vox_x {
                 // hx update equation for k-high plane
                 *self.hx.idxm(i, j, geometry.num_vox_z - 1) += -hay
-                    * (&self.ez.idx(i, j + 1, geometry.num_vox_z - 1)
+                    * (self.ez.idx(i, j + 1, geometry.num_vox_z - 1)
                         - self.ez.idx(i, j, geometry.num_vox_z - 1))
                     + haz * (0.0 - self.ey.idx(i, j, geometry.num_vox_z - 1));
             }
@@ -399,14 +404,6 @@ impl Engine {
         // update ez
         self.update_ez(geometry, &ea, &eb)?;
 
-        //TODO remove me
-        for j in 30..38 {
-            for i in 30..38 {
-                *self.ex.idxm(i, j, 1) += (1e9 * 2.0 * 3.14159 * self.cur_time).sin();
-            }
-        }
-        //*self.ex.idxm(8, 8, 8) += -(1e9 * 2.0 * 3.14159 * self.cur_time).sin();
-
         Ok(())
     }
 
@@ -525,6 +522,33 @@ impl Engine {
                             + geometry.dx_inv * (self.hy.idx(i, j, k) - self.hy.idx(i - 1, j, k))
                             - geometry.dy_inv * (self.hx.idx(i, j, k) - self.hx.idx(i, j - 1, k)));
                 }
+            }
+        }
+
+        Ok(())
+    }
+
+    fn update_tfsf_source(&mut self, geometry: &Geometry, hay: &f64) -> Result<()> {
+        // inject Ey field into Hx, Hz as source field
+        for j in 0..geometry.num_vox_y {
+            for i in 0..geometry.num_vox_x {
+                // scattered field corrections
+                *self.hx.idxm(i, j, geometry.num_vox_z - TFSF_SRC_END_OFFSET) -=
+                    hay * (TAU * 1e9 * self.cur_time).sin();
+
+                *self.hz.idxm(i, j, geometry.num_vox_z - TFSF_SRC_END_OFFSET) -=
+                    hay * (TAU * 1e9 * self.cur_time).sin();
+
+                // total field corrections
+                *self
+                    .hx
+                    .idxm(i, j, geometry.num_vox_z - TFSF_SRC_END_OFFSET - 1) +=
+                    hay * (TAU * 1e9 * self.cur_time).sin();
+
+                *self
+                    .hz
+                    .idxm(i, j, geometry.num_vox_z - TFSF_SRC_END_OFFSET - 1) +=
+                    hay * (TAU * 1e9 * self.cur_time).sin();
             }
         }
 
