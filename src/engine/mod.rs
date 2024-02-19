@@ -530,25 +530,29 @@ impl Engine {
 
     fn update_tfsf_source(&mut self, geometry: &Geometry, hay: &f64) -> Result<()> {
         // inject Ey field into Hx, Hz as source field
-        for j in 0..geometry.num_vox_y {
-            for i in 0..geometry.num_vox_x {
+        for j in 1..(geometry.num_vox_y - 1) {
+            for i in 1..(geometry.num_vox_x - 1) {
                 // scattered field corrections
-                *self.hx.idxm(i, j, geometry.num_vox_z - TFSF_SRC_END_OFFSET) -=
-                    hay * (TAU * 1e9 * self.cur_time).sin();
+                *self.hx.idxm(i, j, geometry.num_vox_z - TFSF_SRC_END_OFFSET) -= hay
+                    * (TAU * 1.2e9 * self.cur_time).sin()
+                    * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
 
-                *self.hz.idxm(i, j, geometry.num_vox_z - TFSF_SRC_END_OFFSET) -=
-                    hay * (TAU * 1e9 * self.cur_time).sin();
+                *self.hz.idxm(i, j, geometry.num_vox_z - TFSF_SRC_END_OFFSET) -= hay
+                    * (TAU * 1.2e9 * self.cur_time).sin()
+                    * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
 
                 // total field corrections
                 *self
                     .hx
-                    .idxm(i, j, geometry.num_vox_z - TFSF_SRC_END_OFFSET - 1) +=
-                    hay * (TAU * 1e9 * self.cur_time).sin();
+                    .idxm(i, j, geometry.num_vox_z - TFSF_SRC_END_OFFSET - 1) += hay
+                    * (TAU * 1.2e9 * self.cur_time).sin()
+                    * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
 
                 *self
                     .hz
-                    .idxm(i, j, geometry.num_vox_z - TFSF_SRC_END_OFFSET - 1) +=
-                    hay * (TAU * 1e9 * self.cur_time).sin();
+                    .idxm(i, j, geometry.num_vox_z - TFSF_SRC_END_OFFSET - 1) += hay
+                    * (TAU * 1.2e9 * self.cur_time).sin()
+                    * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
             }
         }
 

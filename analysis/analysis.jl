@@ -6,9 +6,9 @@ data = readdlm("./out/ey.csv", ',', Float64, '\n')
 
 # constants
 #time = 4
-x_size = 14
-y_size = 7
-z_size = 67
+x_size = 33
+y_size = 17
+z_size = 334
 
 fig = Figure()
 ax = LScene(fig[1, 1], show_axis=false)
@@ -37,7 +37,7 @@ data_slice = @lift(data[$time, :])
 data_vol = @lift(reshape($data_slice, (x_size, y_size, z_size)))
 
 vol = data_vol#[cos(X)*sin(Y)*sin(Z) for X ∈ x, Y ∈ y, Z ∈ z]
-plt = volumeslices!(ax, x, y, z, vol, colormap=:coolwarm, colorrange=(-0.01,0.01), interpolate=true)
+plt = volumeslices!(ax, x, y, z, vol, colormap=:coolwarm, colorrange=(-0.01,0.01), interpolate=true) #interpolate=true
 
 # connect sliders to `volumeslices` update methods
 sl_yz, sl_xz, sl_xy = sgrid.sliders

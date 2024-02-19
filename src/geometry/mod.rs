@@ -13,16 +13,22 @@ use anyhow::{Ok, Result};
 /// Contains all data & methods associated with the geometry of this simulation
 #[derive(Debug)]
 pub struct Geometry {
-    pub ep: f64,     // [F/m] diagonally isotropic permittivity of material inside waveguide
-    pub mu: f64,     // [H/m] diagonally isotropic permeability of material inside waveguide
-    pub sigma: f64,  // [S/m] diagonally isotropic conductivity of material inside waveguide
-    pub dx_inv: f64, // [m^-1] inverse spatial increment in x-direction
-    pub dy_inv: f64, // [m^-1] inverse spatial increment in y-direction
-    pub dz_inv: f64, // [m^-1] inverse spatial increment in z-direction
+    pub ep: f64,    // [F/m] diagonally isotropic permittivity of material inside waveguide
+    pub mu: f64,    // [H/m] diagonally isotropic permeability of material inside waveguide
+    pub sigma: f64, // [S/m] diagonally isotropic conductivity of material inside waveguide
+    pub x_len: f64,
+    pub y_len: f64,
+    pub z_len: f64,
+    pub dx: f64,
+    pub dy: f64,
+    pub dz: f64,
+    pub dx_inv: f64,      // [m^-1] inverse spatial increment in x-direction
+    pub dy_inv: f64,      // [m^-1] inverse spatial increment in y-direction
+    pub dz_inv: f64,      // [m^-1] inverse spatial increment in z-direction
     pub num_vox_x: usize, // [] number of voxels in x-direction
     pub num_vox_y: usize, // [] number of voxels in y-direction
     pub num_vox_z: usize, // [] number of voxels in z-direction
-    pub num_vox: usize, // [] number of voxels in the simulation domain
+    pub num_vox: usize,   // [] number of voxels in the simulation domain
 }
 
 impl Geometry {
@@ -95,24 +101,42 @@ impl Geometry {
         // assign num_vox
         let num_vox: usize = num_vox_x * num_vox_y * num_vox_z;
 
+        // assign dx
+        let dx = x_len / num_vox_x as f64;
+
+        // assign dy
+        let dy = y_len / num_vox_y as f64;
+
+        // assign dz
+        let dz = z_len / num_vox_z as f64;
+
         // use the snapped number of voxels to back solve for the spacing in all directions
-        // These are stored as inverses as they are only every divided by in the update equations. Thus storing their inverses is a low-skill optimization as divides are computationally expensive in comparison to multiplies especially when done many times in loops
+        // These are stored as inverses as they are typically divided by in the update equations. Thus storing their inverses is a low-skill optimization as divides are computationally expensive in comparison to multiplies especially when done many times in loops
         // assign dx_inv
-        let dx_inv: f64 = num_vox_x as f64 / x_len;
+        let dx_inv: f64 = 1.0 / dx;
 
         // assign dy_inv
-        let dy_inv: f64 = num_vox_y as f64 / y_len;
+        let dy_inv: f64 = 1.0 / dy;
 
         // assign dz_inv
-        let dz_inv: f64 = num_vox_z as f64 / z_len;
+        let dz_inv: f64 = 1.0 / dz;
 
         //TODO remove me
-        println!("x-voxels: {}, y-voxels: {}, z-voxels: {}, total: {}", num_vox_x, num_vox_y, num_vox_z, num_vox);
+        println!(
+            "x-voxels: {}, y-voxels: {}, z-voxels: {}, total: {}",
+            num_vox_x, num_vox_y, num_vox_z, num_vox
+        );
 
         Ok(Geometry {
             ep,
             mu,
             sigma,
+            x_len,
+            y_len,
+            z_len,
+            dx,
+            dy,
+            dz,
             dx_inv,
             dy_inv,
             dz_inv,
