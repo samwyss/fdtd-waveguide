@@ -2,13 +2,13 @@ using GLMakie
 using DelimitedFiles
 
 # load data
-data = readdlm("./out/hz.csv", ',', Float64, '\n')
+data = readdlm("./out/ey.csv", ',', Float64, '\n')
 
 # constants
 #time = 4
-x_size = 17
-y_size = 17
-z_size = 17
+x_size = 14
+y_size = 7
+z_size = 67
 
 fig = Figure()
 ax = LScene(fig[1, 1], show_axis=false)
