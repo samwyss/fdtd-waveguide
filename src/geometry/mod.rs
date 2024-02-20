@@ -2,7 +2,7 @@
 //!
 //! Contains all data & code relevant to the geometry of this simulation.
 //!
-//! This is admittedly overkill for this simulation as the permittivity, permeability, and conductivity distributions are very simple. However this was left in for stylistic purposes as well as for future expandability if desired.
+//! This is admittedly overkill for this simulation as the permittivity, permeability, and conductivity distributions are very simple. However this was left in for stylistic purposes as well as for future expandability if desired
 
 // import local modules and cargo crates
 use crate::{solver::Config, C_0, EP_0, MU_0};
@@ -10,25 +10,27 @@ use anyhow::{Ok, Result};
 
 /// Geometry struct
 ///
-/// Contains all data & methods associated with the geometry of this simulation
+/// contains all data & methods associated with the geometry of this simulation
+///
+/// additionally not all fields of this struct are needed, however they are kept anyway as they could be useful in the future if this is ever expanded
 #[derive(Debug)]
 pub struct Geometry {
-    pub ep: f64,    // [F/m] diagonally isotropic permittivity of material inside waveguide
-    pub mu: f64,    // [H/m] diagonally isotropic permeability of material inside waveguide
-    pub sigma: f64, // [S/m] diagonally isotropic conductivity of material inside waveguide
-    pub x_len: f64,
-    pub y_len: f64,
-    pub z_len: f64,
-    pub dx: f64,
-    pub dy: f64,
-    pub dz: f64,
-    pub dx_inv: f64,      // [m^-1] inverse spatial increment in x-direction
-    pub dy_inv: f64,      // [m^-1] inverse spatial increment in y-direction
-    pub dz_inv: f64,      // [m^-1] inverse spatial increment in z-direction
+    pub ep: f64,     // [F/m] diagonally isotropic permittivity of material inside waveguide
+    pub mu: f64,     // [H/m] diagonally isotropic permeability of material inside waveguide
+    pub sigma: f64,  // [S/m] diagonally isotropic conductivity of material inside waveguide
+    pub x_len: f64,  // [m] length of waveguide in the x-direction
+    pub y_len: f64,  // [m] length of waveguide in the y-direction
+    pub z_len: f64,  // [m] length of waveguide in the z-direction
+    pub dx: f64,     // [m] spatial increment in x-direction
+    pub dy: f64,     // [m] spatial increment in x-direction
+    pub dz: f64,     // [m] spatial increment in x-direction
+    pub dx_inv: f64, // [m^-1] inverse spatial increment in x-direction
+    pub dy_inv: f64, // [m^-1] inverse spatial increment in y-direction
+    pub dz_inv: f64, // [m^-1] inverse spatial increment in z-direction
     pub num_vox_x: usize, // [] number of voxels in x-direction
     pub num_vox_y: usize, // [] number of voxels in y-direction
     pub num_vox_z: usize, // [] number of voxels in z-direction
-    pub num_vox: usize,   // [] number of voxels in the simulation domain
+    pub num_vox: usize, // [] number of voxels in the simulation domain
 }
 
 impl Geometry {
@@ -121,11 +123,20 @@ impl Geometry {
         // assign dz_inv
         let dz_inv: f64 = 1.0 / dz;
 
-        //TODO remove me
+        // show geometry information to user, //TODO this block can be removed
         println!(
-            "x-voxels: {}, y-voxels: {}, z-voxels: {}, total: {}",
-            num_vox_x, num_vox_y, num_vox_z, num_vox
+            "x-length: {}[m], x-voxels: {}, dx: {}[m]",
+            x_len, num_vox_x, dx
         );
+        println!(
+            "y-length: {}[m], y-voxels: {}, dy: {}[m]",
+            y_len, num_vox_y, dy
+        );
+        println!(
+            "z-length: {}[m], z-voxels: {}, dz: {}[m]",
+            z_len, num_vox_z, dz
+        );
+        println!("total number of voxels: {}", num_vox);
 
         Ok(Geometry {
             ep,
