@@ -7,7 +7,7 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in library 'fdtd_waveguide'",
+            "name": "Debug unit tests in library 'waveguide'",
             "cargo": {
                 "args": [
                     "test",
@@ -16,7 +16,7 @@
                     "--package=fdtd_waveguide"
                 ],
                 "filter": {
-                    "name": "fdtd_waveguide",
+                    "name": "waveguide",
                     "kind": "lib"
                 }
             },
@@ -26,15 +26,15 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug executable 'fdtd_waveguide'",
+            "name": "Debug executable 'driver'",
             "cargo": {
                 "args": [
                     "build",
-                    "--bin=fdtd_waveguide",
+                    "--bin=driver",
                     "--package=fdtd_waveguide"
                 ],
                 "filter": {
-                    "name": "fdtd_waveguide",
+                    "name": "driver",
                     "kind": "bin"
                 }
             },
@@ -44,16 +44,16 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in executable 'fdtd_waveguide'",
+            "name": "Debug unit tests in executable 'driver'",
             "cargo": {
                 "args": [
                     "test",
                     "--no-run",
-                    "--bin=fdtd_waveguide",
+                    "--bin=driver",
                     "--package=fdtd_waveguide"
                 ],
                 "filter": {
-                    "name": "fdtd_waveguide",
+                    "name": "driver",
                     "kind": "bin"
                 }
             },

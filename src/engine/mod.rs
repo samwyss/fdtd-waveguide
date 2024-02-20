@@ -9,7 +9,7 @@ const ONE_OVER_TWO: f64 = 1.0 / 2.0;
 const TFSF_SRC_END_OFFSET: usize = 3;
 
 // import local modules and cargo crates
-use crate::{geometry::Geometry, helpers::write_buf_vec, C_0};
+use crate::{geometry::Geometry, helpers::write_buf_vec, solver::Config, C_0};
 use anyhow::{Ok, Result};
 use csv::WriterBuilder;
 use std::f64::consts::{PI, TAU};
@@ -35,7 +35,7 @@ pub struct Engine {
 }
 
 impl Engine {
-    pub fn new(geometry: &Geometry, snapshot_steps: usize) -> Result<Engine> {
+    pub fn new(config: &Config, geometry: &Geometry) -> Result<Engine> {
         // assign cur_time to 0 as that is initial state of engine
         let cur_time: f64 = 0.0;
 
@@ -147,6 +147,9 @@ impl Engine {
             .has_headers(false)
             .from_writer(BufWriter::new(ez_file));
 
+        // assign snapshot_steps
+        let snapshot_steps = config.snapshot_steps;
+
         Ok(Engine {
             cur_time,
             ex,
@@ -165,7 +168,7 @@ impl Engine {
         })
     }
 
-    pub fn update(&mut self, geometry: &Geometry, target_time: f64) -> Result<()> {
+    pub fn update(&mut self, geometry: &Geometry, target_time: &f64) -> Result<()> {
         // calculate first pass at time step based on Courant–Friedrichs–Lewy stability condition
         let mut dt: f64 = (C_0
             * (geometry.dx_inv.powi(2) + geometry.dy_inv.powi(2) + geometry.dz_inv.powi(2)).sqrt())
@@ -176,6 +179,14 @@ impl Engine {
 
         // recalculate the time step based on the snapped number of loop iterations
         dt = target_time / time_steps as f64;
+
+        // calculate the number of steps between each snapshot
+        let snapshot_mod_steps: usize;
+        if self.snapshot_steps >= time_steps {
+            snapshot_mod_steps = 1;
+        } else {
+            snapshot_mod_steps = (time_steps as f64 / self.snapshot_steps as f64).ceil() as usize;
+        }
 
         // pre-process loop constants
         let ea: f64 = (geometry.ep / dt + geometry.sigma / 2.0).powi(-1);
@@ -205,7 +216,7 @@ impl Engine {
             // update current engine time after electric field update
             self.cur_time += ONE_OVER_TWO * dt;
 
-            if t % self.snapshot_steps == 0 {
+            if t % snapshot_mod_steps == 0 {
                 self.snapshot_fields()?;
             }
         }

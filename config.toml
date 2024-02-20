@@ -1,10 +1,14 @@
+# simulation parameters
 max_frequency = 1e9             # [Hz] maximium frequency to resolve
 voxels_per_min_wavelength = 50  # [] number of voxels per minimum wavelength 20-50
 voxels_per_min_feature = 4      # [] number of voxels per minimum feature size
+snapshot_steps = 2            # [] the model will snapshot internal fields this many times throughout the simulation is possible. note, if this number is larger than the number of steps, the simulation will snapshot itself at all timesteps 
+end_time = 1e-9                # [s] end time of the simulation
+
+# geometry and material parameters
 x_len = 0.19558               # [m] length of waveguide in x-direction
 y_len = 0.09779                    # [m] length of waveguide in y-direction
 z_len = 2                    # [m] length of waveguide in z-direction (direction of propagation)
 ep_r = 1                        # [] diagonally isotropic relative permittivity inside waveguide 
 mu_r = 1                        # [] diagonally isotropic relative permeability inside waveguide
 sigma = 0                       # [S/m] diagonally isotropic conductivity of material
-snapshot_mod_steps = 10       # [] simulation will take a snapshot at the timestep mod snapshot_mod_steps, equivalent to saying take a snapshot every snapshot_mod_steps, keep this value very small until you know what you are doing

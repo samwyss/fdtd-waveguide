@@ -5,7 +5,7 @@
 //! This is admittedly overkill for this simulation as the permittivity, permeability, and conductivity distributions are very simple. However this was left in for stylistic purposes as well as for future expandability if desired.
 
 // import local modules and cargo crates
-use crate::{helpers::Config, C_0, EP_0, MU_0};
+use crate::{solver::Config, C_0, EP_0, MU_0};
 use anyhow::{Ok, Result};
 
 /// Geometry struct
