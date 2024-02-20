@@ -1,6 +1,6 @@
 //! driver binary crate
 //!
-//! this is compiled into a simulation executable
+//! this is compiled into a simulation executable driver.exe
 
 // import crates and local waveguide library
 use anyhow::{Ok, Result};
