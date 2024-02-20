@@ -3,7 +3,7 @@
 //! Acts as a high level interface for controlling the simulation
 
 // import local modules and crates
-use super::{engine::Engine, geometry::Geometry};
+use crate::{engine::Engine, geometry::Geometry};
 use anyhow::{anyhow, Ok, Result};
 use serde_derive::Deserialize;
 use std::fs::read_to_string;
