@@ -1,8 +1,22 @@
-// import crates
-use anyhow::{Ok, Result};
-use fdtd_waveguide::solver::Solver;
+//! driver binary crate
+//!
+//! acts as a main function for the simulation
 
-// main driver function
+// import crates and local waveguide library
+use anyhow::{Ok, Result};
+use waveguide::solver::Solver;
+
+/// main function
+///
+/// # Arguments
+///
+/// # Returns
+///
+/// `Result<()>`
+///
+/// # Errors
+/// - `Solver::new()` errors
+/// - `Solver::update()` errors
 fn main() -> Result<()> {
     // construct new solver
     let mut solver = Solver::new("./config.toml")?;
