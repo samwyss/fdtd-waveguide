@@ -71,6 +71,7 @@ pub struct Config {
     pub mu_r: f64,  // [] diagonally isotropic relative permeability inside waveguide
     pub sigma: f64, // [S/m] diagonally isotropic conductivity of material
     pub snapshot_steps: usize,
+    pub buffered_snapshots: usize,
     pub end_time: f64, // [s] end time of the simulation
     pub frequency: f64,
     pub delay_time: f64,

@@ -130,22 +130,40 @@ impl Engine {
         // create buffered writers for all field values
         let hx_wtr: csv::Writer<BufWriter<File>> = WriterBuilder::new()
             .has_headers(false)
-            .from_writer(BufWriter::new(hx_file));
+            .from_writer(BufWriter::with_capacity(
+                8 * geometry.num_vox * config.buffered_snapshots,
+                hx_file,
+            ));
         let hy_wtr: csv::Writer<BufWriter<File>> = WriterBuilder::new()
             .has_headers(false)
-            .from_writer(BufWriter::new(hy_file));
+            .from_writer(BufWriter::with_capacity(
+                8 * geometry.num_vox * config.buffered_snapshots,
+                hy_file,
+            ));
         let hz_wtr: csv::Writer<BufWriter<File>> = WriterBuilder::new()
             .has_headers(false)
-            .from_writer(BufWriter::new(hz_file));
+            .from_writer(BufWriter::with_capacity(
+                8 * geometry.num_vox * config.buffered_snapshots,
+                hz_file,
+            ));
         let ex_wtr: csv::Writer<BufWriter<File>> = WriterBuilder::new()
             .has_headers(false)
-            .from_writer(BufWriter::new(ex_file));
+            .from_writer(BufWriter::with_capacity(
+                8 * geometry.num_vox * config.buffered_snapshots,
+                ex_file,
+            ));
         let ey_wtr: csv::Writer<BufWriter<File>> = WriterBuilder::new()
             .has_headers(false)
-            .from_writer(BufWriter::new(ey_file));
+            .from_writer(BufWriter::with_capacity(
+                8 * geometry.num_vox * config.buffered_snapshots,
+                ey_file,
+            ));
         let ez_wtr: csv::Writer<BufWriter<File>> = WriterBuilder::new()
             .has_headers(false)
-            .from_writer(BufWriter::new(ez_file));
+            .from_writer(BufWriter::with_capacity(
+                8 * geometry.num_vox * config.buffered_snapshots,
+                ez_file,
+            ));
 
         // assign snapshot_steps
         let snapshot_steps = config.snapshot_steps;
