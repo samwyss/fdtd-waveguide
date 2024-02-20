@@ -4,7 +4,7 @@
 //!
 //! Think of this as something similar-ish to a header file in C/C++
 
-// declare constants
+// declare universal constants
 pub const ETA_0: f64 = 376.730313668; // [Ohms] free space impedance
 pub const EP_0: f64 = 8.8541878128e-12; // [F/m] free space vacuum permittivity
 pub const MU_0: f64 = 1.25663706212e-6; // [H/m] free space vacuum permeability
