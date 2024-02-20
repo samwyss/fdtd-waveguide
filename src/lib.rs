@@ -13,5 +13,4 @@ pub const C_0: f64 = 299792458.0; // [m/s] free space speed of light
 // declare all local modules and conditionally expose them to main.rs
 mod engine;
 mod geometry;
-mod helpers;
 pub mod solver;

@@ -9,7 +9,7 @@ const ONE_OVER_TWO: f64 = 1.0 / 2.0;
 const TFSF_SRC_END_OFFSET: usize = 3;
 
 // import local modules and cargo crates
-use crate::{geometry::Geometry, helpers::write_buf_vec, solver::Config, C_0};
+use crate::{geometry::Geometry, solver::Config, C_0};
 use anyhow::{Ok, Result};
 use csv::WriterBuilder;
 use std::f64::consts::{E, PI, TAU};
@@ -247,12 +247,12 @@ impl Engine {
     }
 
     fn snapshot_fields(&mut self) -> Result<()> {
-        write_buf_vec(&mut self.hx_wtr, &self.hx.field)?;
-        write_buf_vec(&mut self.hy_wtr, &self.hy.field)?;
-        write_buf_vec(&mut self.hz_wtr, &self.hz.field)?;
-        write_buf_vec(&mut self.ex_wtr, &self.ex.field)?;
-        write_buf_vec(&mut self.ey_wtr, &self.ey.field)?;
-        write_buf_vec(&mut self.ez_wtr, &self.ez.field)?;
+        Engine::write_buf_vec(&mut self.hx_wtr, &self.hx.field)?;
+        Engine::write_buf_vec(&mut self.hy_wtr, &self.hy.field)?;
+        Engine::write_buf_vec(&mut self.hz_wtr, &self.hz.field)?;
+        Engine::write_buf_vec(&mut self.ex_wtr, &self.ex.field)?;
+        Engine::write_buf_vec(&mut self.ey_wtr, &self.ey.field)?;
+        Engine::write_buf_vec(&mut self.ez_wtr, &self.ez.field)?;
 
         Ok(())
     }
@@ -264,6 +264,17 @@ impl Engine {
         self.ex_wtr.flush()?;
         self.ey_wtr.flush()?;
         self.ez_wtr.flush()?;
+
+        Ok(())
+    }
+
+    fn write_buf_vec(
+        buffered_writer: &mut csv::Writer<BufWriter<File>>,
+        data: &[f64],
+    ) -> Result<()> {
+        // write data into buffered_writer
+        buffered_writer
+            .write_record(data.iter().map(|x| x.to_string()).collect::<Vec<String>>())?;
 
         Ok(())
     }
