@@ -38,7 +38,7 @@ impl Geometry {
     ///
     /// # Arguments
     ///
-    /// `config` helpers::Config configuration struct
+    /// `config` solver::Config struct
     ///
     /// # Returns
     ///

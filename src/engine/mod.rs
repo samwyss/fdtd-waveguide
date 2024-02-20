@@ -2,39 +2,140 @@
 //!
 //! Contains all data relevant to the state of the simulation and code needed to evolve said state.
 //!
-//! Operates on a Geometry (see ./src/geometry/mod.rs).
+//! Operates on a Geometry (see ./src/geometry/mod.rs) and a Config (see ./src/solver/mod.rs).
+
+// import local modules and cargo crates
+use crate::{geometry::Geometry, solver::Config, C_0};
+use anyhow::{Ok, Result};
+use csv::{Writer, WriterBuilder};
+use std::f64::consts::{E, PI, TAU};
+use std::fs::{create_dir, remove_dir_all, File, OpenOptions};
+use std::io::BufWriter;
 
 // constant declarations
 const ONE_OVER_TWO: f64 = 1.0 / 2.0;
 const TFSF_SRC_END_OFFSET: usize = 3;
 
-// import local modules and cargo crates
-use crate::{geometry::Geometry, solver::Config, C_0};
-use anyhow::{Ok, Result};
-use csv::WriterBuilder;
-use std::f64::consts::{E, PI, TAU};
-use std::fs::{create_dir, remove_dir_all, File, OpenOptions};
-use std::io::BufWriter;
+/// ScalarField struct
+///
+/// Provides a no cost abstraction of a Vec<f64> to function as a 3D scalar field using Fortran-style ordering as this intuitively simpler than C-style in my opinion
+#[derive(Debug)]
+struct ScalarField {
+    field: Vec<f64>, // [implied unit] contains all scalar field data of implied unit (e.g. A/m, V/m, etc.)
+    row_offset: usize, // [] row offset into 1D Vec
+    column_offset: usize, // [] column offset into 1D Vec
+}
 
+impl ScalarField {
+    /// ScalarField constructor
+    ///
+    /// # Arguments
+    ///
+    /// - `initial_value` [implied unit] initial value for all points in ScalarField
+    /// - `size` [] total number of discrete locations in field
+    /// - `row_offset` [] row offset into 1D Vec
+    /// - `column_offset` [] column offset into 1D Vec
+    ///
+    /// # Returns
+    ///
+    /// `Result<ScalarField>`
+    ///
+    /// # Errors
+    ///
+    pub fn new(
+        initial_value: f64,
+        size: usize,
+        row_offset: usize,
+        column_offset: usize,
+    ) -> Result<ScalarField> {
+        let field = vec![initial_value; size];
+        Ok(ScalarField {
+            field,
+            row_offset,
+            column_offset,
+        })
+    }
+
+    /// returns an aliased value at position [i,j,k] in ScalarField
+    ///
+    /// used to get an immutable value of a ScalarField at position [i,j,k]
+    ///
+    /// # Arguments
+    ///
+    /// -`i` [] i-index into ScalarField using Fortran-style ordering
+    /// -`j` [] j-index into ScalarField using Fortran-style ordering
+    /// -`k` [] k-index into ScalarField using Fortran-style ordering
+    ///
+    /// # Returns
+    ///
+    /// `f64`
+    ///
+    /// # Errors
+    ///
+    /// panics if [i,j,k] is out of bounds. this was not error handled properly to reduce the number of checks as this function is used very heavily
+    pub fn idx(&self, i: usize, j: usize, k: usize) -> f64 {
+        self.field[i + j * self.row_offset + k * self.row_offset * self.column_offset]
+    }
+
+    /// returns a mutable reference to value at position [i,j,k] in ScalarField
+    ///
+    /// used to get a mutable reference to a value of a ScalarField at position [i,j,k]
+    ///
+    /// # Arguments
+    ///
+    /// -`i` [] i-index into ScalarField using Fortran-style ordering
+    /// -`j` [] j-index into ScalarField using Fortran-style ordering
+    /// -`k` [] k-index into ScalarField using Fortran-style ordering
+    ///
+    /// # Returns
+    ///
+    /// `&mut f64`
+    ///
+    /// # Errors
+    ///
+    /// panics if [i,j,k] is out of bounds. this was not error handled properly to reduce the number of checks as this function is used very heavily
+    pub fn idxm(&mut self, i: usize, j: usize, k: usize) -> &mut f64 {
+        &mut self.field[i + j * self.row_offset + k * self.row_offset * self.column_offset]
+    }
+}
+
+/// Engine struct
+///
+/// contains all code and data necessary to evolve field states to a given time
 #[derive(Debug)]
 pub struct Engine {
-    cur_time: f64,
-    ex: ScalarField,
-    ey: ScalarField,
-    ez: ScalarField,
-    hx: ScalarField,
-    hy: ScalarField,
-    hz: ScalarField,
-    hx_wtr: csv::Writer<BufWriter<File>>,
-    hy_wtr: csv::Writer<BufWriter<File>>,
-    hz_wtr: csv::Writer<BufWriter<File>>,
-    ex_wtr: csv::Writer<BufWriter<File>>,
-    ey_wtr: csv::Writer<BufWriter<File>>,
-    ez_wtr: csv::Writer<BufWriter<File>>,
-    snapshot_steps: usize,
+    cur_time: f64,                   // [s] the current time of the simulation
+    ex: ScalarField,                 // [V/m] Ex ScalarField
+    ey: ScalarField,                 // [V/m] Ey ScalarField
+    ez: ScalarField,                 // [V/m] Ez ScalarField
+    hx: ScalarField,                 // [A/m] Hx ScalarField
+    hy: ScalarField,                 // [A/m] Hy ScalarField
+    hz: ScalarField,                 // [A/m] Hz ScalarField
+    hx_wtr: Writer<BufWriter<File>>, // [] Ex Field Buffered CSV Writer
+    hy_wtr: Writer<BufWriter<File>>, // [] Ey Field Buffered CSV Writer
+    hz_wtr: Writer<BufWriter<File>>, // [] Ez Field Buffered CSV Writer
+    ex_wtr: Writer<BufWriter<File>>, // [] Hx Field Buffered CSV Writer
+    ey_wtr: Writer<BufWriter<File>>, // [] Hy Field Buffered CSV Writer
+    ez_wtr: Writer<BufWriter<File>>, // [] Hz Field Buffered CSV Writer
+    snapshot_steps: usize,           // [] number of steps to snapshot
 }
 
 impl Engine {
+    /// Engine constructor
+    ///
+    /// # Arguments
+    ///
+    /// `config` solver::Config struct
+    /// `geometry` geometry::Geometry struct
+    ///
+    /// # Returns
+    ///
+    /// `Result<Engine>`
+    ///
+    /// # Errors
+    /// - any `ScalarField` constructors error
+    /// - `fs::create_dir()` is unable to create directory "./out"
+    /// - creation of any file descriptors fail
     pub fn new(config: &Config, geometry: &Geometry) -> Result<Engine> {
         // assign cur_time to 0 as that is initial state of engine
         let cur_time: f64 = 0.0;
@@ -127,43 +228,49 @@ impl Engine {
             .create(true)
             .open(&ez_path)?;
 
-        // create buffered writers for all field values
-        let hx_wtr: csv::Writer<BufWriter<File>> = WriterBuilder::new()
-            .has_headers(false)
-            .from_writer(BufWriter::with_capacity(
-                8 * geometry.num_vox * config.buffered_snapshots,
-                hx_file,
-            ));
-        let hy_wtr: csv::Writer<BufWriter<File>> = WriterBuilder::new()
-            .has_headers(false)
-            .from_writer(BufWriter::with_capacity(
-                8 * geometry.num_vox * config.buffered_snapshots,
-                hy_file,
-            ));
-        let hz_wtr: csv::Writer<BufWriter<File>> = WriterBuilder::new()
-            .has_headers(false)
-            .from_writer(BufWriter::with_capacity(
-                8 * geometry.num_vox * config.buffered_snapshots,
-                hz_file,
-            ));
-        let ex_wtr: csv::Writer<BufWriter<File>> = WriterBuilder::new()
-            .has_headers(false)
-            .from_writer(BufWriter::with_capacity(
-                8 * geometry.num_vox * config.buffered_snapshots,
-                ex_file,
-            ));
-        let ey_wtr: csv::Writer<BufWriter<File>> = WriterBuilder::new()
-            .has_headers(false)
-            .from_writer(BufWriter::with_capacity(
-                8 * geometry.num_vox * config.buffered_snapshots,
-                ey_file,
-            ));
-        let ez_wtr: csv::Writer<BufWriter<File>> = WriterBuilder::new()
-            .has_headers(false)
-            .from_writer(BufWriter::with_capacity(
-                8 * geometry.num_vox * config.buffered_snapshots,
-                ez_file,
-            ));
+        // create buffered writers of desired size for all field values
+        let hx_wtr: Writer<BufWriter<File>> =
+            WriterBuilder::new()
+                .has_headers(false)
+                .from_writer(BufWriter::with_capacity(
+                    8 * geometry.num_vox * config.buffered_snapshots,
+                    hx_file,
+                ));
+        let hy_wtr: Writer<BufWriter<File>> =
+            WriterBuilder::new()
+                .has_headers(false)
+                .from_writer(BufWriter::with_capacity(
+                    8 * geometry.num_vox * config.buffered_snapshots,
+                    hy_file,
+                ));
+        let hz_wtr: Writer<BufWriter<File>> =
+            WriterBuilder::new()
+                .has_headers(false)
+                .from_writer(BufWriter::with_capacity(
+                    8 * geometry.num_vox * config.buffered_snapshots,
+                    hz_file,
+                ));
+        let ex_wtr: Writer<BufWriter<File>> =
+            WriterBuilder::new()
+                .has_headers(false)
+                .from_writer(BufWriter::with_capacity(
+                    8 * geometry.num_vox * config.buffered_snapshots,
+                    ex_file,
+                ));
+        let ey_wtr: Writer<BufWriter<File>> =
+            WriterBuilder::new()
+                .has_headers(false)
+                .from_writer(BufWriter::with_capacity(
+                    8 * geometry.num_vox * config.buffered_snapshots,
+                    ey_file,
+                ));
+        let ez_wtr: Writer<BufWriter<File>> =
+            WriterBuilder::new()
+                .has_headers(false)
+                .from_writer(BufWriter::with_capacity(
+                    8 * geometry.num_vox * config.buffered_snapshots,
+                    ez_file,
+                ));
 
         // assign snapshot_steps
         let snapshot_steps = config.snapshot_steps;
@@ -186,6 +293,19 @@ impl Engine {
         })
     }
 
+    /// updates all fields to time specified in config.end_time
+    ///
+    /// # Arguments
+    ///
+    /// `config` solver::Config struct
+    /// `geometry` geometry::Geometry struct
+    ///
+    /// # Returns
+    ///
+    /// `Result<()>`
+    ///
+    /// # Errors
+    ///
     pub fn update(&mut self, config: &Config, geometry: &Geometry) -> Result<()> {
         // calculate first pass at time step based on Courant–Friedrichs–Lewy stability condition
         let mut dt: f64 = (C_0
@@ -235,6 +355,10 @@ impl Engine {
             self.cur_time += ONE_OVER_TWO * dt;
 
             if t % snapshot_mod_steps == 0 {
+                println!(
+                    "took snapshot at t={}[s], step {}/{}",
+                    self.cur_time, t, time_steps
+                );
                 self.snapshot_fields()?;
             }
         }
@@ -607,36 +731,5 @@ impl Engine {
     fn tapered_sin(&self, config: &Config) -> f64 {
         (1.0 - E.powf(-(self.cur_time - config.delay_time) / (config.ramp_time)))
             * (TAU * config.frequency * self.cur_time).sin()
-    }
-}
-
-#[derive(Debug)]
-struct ScalarField {
-    field: Vec<f64>,
-    row_offset: usize,
-    column_offset: usize,
-}
-
-impl ScalarField {
-    pub fn new(
-        initial_value: f64,
-        size: usize,
-        row_offset: usize,
-        column_offset: usize,
-    ) -> Result<ScalarField> {
-        let field = vec![initial_value; size];
-        Ok(ScalarField {
-            field,
-            row_offset,
-            column_offset,
-        })
-    }
-
-    pub fn idx(&self, i: usize, j: usize, k: usize) -> f64 {
-        self.field[i + j * self.row_offset + k * self.row_offset * self.column_offset]
-    }
-
-    pub fn idxm(&mut self, i: usize, j: usize, k: usize) -> &mut f64 {
-        &mut self.field[i + j * self.row_offset + k * self.row_offset * self.column_offset]
     }
 }
