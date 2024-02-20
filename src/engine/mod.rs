@@ -367,12 +367,14 @@ impl Engine {
             self.update_mur_abc(geometry, abc1, abc2, abc3, abc4, &ey_n, &ey_n_1)?;
 
             // update clones of Ey for Mur ABC
+            // TODO this can be improved by only keeping the desired array slice(s) instead of the entire field but this was convenient
             ey_n_1 = ey_n.clone();
             ey_n = self.ey.clone();
 
             // update current engine time after electric field update
             self.cur_time += ONE_OVER_TWO * dt;
 
+            // conditionally snapshot all field values
             if t % snapshot_mod_steps == 0 {
                 println!(
                     "took snapshot at t={}[s], step {}/{}",
@@ -389,6 +391,20 @@ impl Engine {
         Ok(())
     }
 
+    /// snapshots all field values
+    ///
+    /// # Arguments
+    ///
+    /// `&mut self` mutable reference to Engine struct
+    ///
+    /// # Returns
+    ///
+    /// `Result<()>`
+    ///
+    /// # Errors
+    ///
+    /// - `write_buf_vec()` calls fail for any field
+    ///
     fn snapshot_fields(&mut self) -> Result<()> {
         Engine::write_buf_vec(&mut self.hx_wtr, &self.hx.field)?;
         Engine::write_buf_vec(&mut self.hy_wtr, &self.hy.field)?;
@@ -400,6 +416,20 @@ impl Engine {
         Ok(())
     }
 
+    /// snapshots all field values
+    ///
+    /// # Arguments
+    ///
+    /// `&mut self` mutable reference to Engine struct
+    ///
+    /// # Returns
+    ///
+    /// `Result<()>`
+    ///
+    /// # Errors
+    ///
+    /// - `wtr.flush()` calls fail for any field
+    ///
     fn flush_fields(&mut self) -> Result<()> {
         self.hx_wtr.flush()?;
         self.hx_wtr.flush()?;
