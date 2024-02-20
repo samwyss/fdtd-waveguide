@@ -1,18 +1,18 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-time = 19
-x_size = 33
-y_size = 17
-z_size = 334
+time = 99
+x_size = 14
+y_size = 7
+z_size = 67
 low = -0.1
 high = 0.1
-slice = 9
+slice = 4
 
 plt.rcParams["text.usetex"] = True
 
 ey = np.loadtxt("./out/ey.csv", delimiter=",", encoding="UTF-8")
-ey_slice = ey[time].reshape((x_size, y_size, z_size), order="F")[:, 9, :]
+ey_slice = ey[time].reshape((x_size, y_size, z_size), order="F")[:, slice, :]
 
 fig, ax = plt.subplots()
 

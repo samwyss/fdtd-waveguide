@@ -36,8 +36,8 @@ data_slice = @lift(data[$time, :])
 # reorder into volume
 data_vol = @lift(reshape($data_slice, (x_size, y_size, z_size)))
 
-low = -1
-high = 1
+low = -0.1
+high = 0.1
 
 vol = data_vol#[cos(X)*sin(Y)*sin(Z) for X ∈ x, Y ∈ y, Z ∈ z]
 plt = volumeslices!(ax, x, y, z, vol, colormap=:coolwarm, colorrange=(low,high), interpolate=true) #interpolate=true

@@ -2,7 +2,7 @@
 max_frequency = 1e9             # [Hz] maximium frequency to resolve
 voxels_per_min_wavelength = 20  # [] number of voxels per minimum wavelength 20-50
 voxels_per_min_feature = 4      # [] number of voxels per minimum feature size
-snapshot_steps = 100            # [] the model will snapshot internal fields at least this many times throughout the simulation if possible
+snapshot_steps = 100            # [] the model will attempt to snapshot internal fields at least this many times throughout the simulation if possible
 buffered_snapshots = 20          # [] the model will create write buffers large enough to fit this many field snapshots as to reduce write syscalls 
 end_time = 20e-9                # [s] end time of the simulation
 

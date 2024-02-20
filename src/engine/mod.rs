@@ -14,7 +14,6 @@ use std::io::BufWriter;
 
 // constant declarations
 const ONE_OVER_TWO: f64 = 1.0 / 2.0;
-const TFSF_SRC_END_OFFSET: usize = 3;
 
 /// ScalarField struct
 ///
@@ -722,24 +721,20 @@ impl Engine {
         for j in 1..(geometry.num_vox_y - 1) {
             for i in 1..(geometry.num_vox_x - 1) {
                 // scattered field corrections
-                *self.hx.idxm(i, j, geometry.num_vox_z - TFSF_SRC_END_OFFSET) -= hay
+                *self.hx.idxm(i, j, geometry.num_vox_z - 2) -= hay
                     * self.tapered_sin(config)
                     * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
 
-                *self.hz.idxm(i, j, geometry.num_vox_z - TFSF_SRC_END_OFFSET) -= hay
+                *self.hz.idxm(i, j, geometry.num_vox_z - 2) -= hay
                     * self.tapered_sin(config)
                     * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
 
                 // total field corrections
-                *self
-                    .hx
-                    .idxm(i, j, geometry.num_vox_z - TFSF_SRC_END_OFFSET - 1) += hay
+                *self.hx.idxm(i, j, geometry.num_vox_z - 2 - 1) += hay
                     * self.tapered_sin(config)
                     * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
 
-                *self
-                    .hz
-                    .idxm(i, j, geometry.num_vox_z - TFSF_SRC_END_OFFSET - 1) += hay
+                *self.hz.idxm(i, j, geometry.num_vox_z - 2 - 1) += hay
                     * self.tapered_sin(config)
                     * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
             }
