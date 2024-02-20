@@ -2,14 +2,14 @@
 max_frequency = 1e9             # [Hz] maximium frequency to resolve
 voxels_per_min_wavelength = 20  # [] number of voxels per minimum wavelength 20-50
 voxels_per_min_feature = 4      # [] number of voxels per minimum feature size
-snapshot_steps = 20            # [] the model will snapshot internal fields at least this many times throughout the simulation if possible
-buffered_snapshots = 4          # [] the model will create write buffers large enough to fit this many field snapshots as to reduce write syscalls 
+snapshot_steps = 100            # [] the model will snapshot internal fields at least this many times throughout the simulation if possible
+buffered_snapshots = 20          # [] the model will create write buffers large enough to fit this many field snapshots as to reduce write syscalls 
 end_time = 20e-9                # [s] end time of the simulation
 
 # geometry and material parameters
 x_len = 0.19558               # [m] length of waveguide in x-direction
 y_len = 0.09779                    # [m] length of waveguide in y-direction
-z_len = 2                    # [m] length of waveguide in z-direction (direction of propagation)
+z_len = 1                    # [m] length of waveguide in z-direction (direction of propagation)
 ep_r = 1                        # [] diagonally isotropic relative permittivity inside waveguide 
 mu_r = 1                        # [] diagonally isotropic relative permeability inside waveguide
 sigma = 0                       # [S/m] diagonally isotropic conductivity of material

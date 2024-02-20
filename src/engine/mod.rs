@@ -19,7 +19,7 @@ const TFSF_SRC_END_OFFSET: usize = 3;
 /// ScalarField struct
 ///
 /// Provides a no cost abstraction of a Vec<f64> to function as a 3D scalar field using Fortran-style ordering as this intuitively simpler than C-style in my opinion
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct ScalarField {
     field: Vec<f64>, // [implied unit] contains all scalar field data of implied unit (e.g. A/m, V/m, etc.)
     row_offset: usize, // [] row offset into 1D Vec
@@ -333,9 +333,22 @@ impl Engine {
         let hay: f64 = dt * geometry.dy_inv / geometry.mu;
         let haz: f64 = dt * geometry.dz_inv / geometry.mu;
 
-        // log basic time loop stats to stdout
+        // pre-process Mur ABC constants
+        let c_mur = C_0 / (geometry.mu_r * geometry.ep_r).sqrt();
+        let abc1 = (c_mur * dt - geometry.dz) / (c_mur * dt + geometry.dz);
+        let abc2 = (2.0 * geometry.dz) / (c_mur * dt + geometry.dz);
+        let abc3 = ((c_mur * dt).powi(2) * geometry.dz)
+            / (2.0 * (geometry.dy).powi(2) * c_mur * dt + geometry.dz);
+        let abc4 = ((c_mur * dt).powi(2) * geometry.dz)
+            / (2.0 * (geometry.dx).powi(2) * c_mur * dt + geometry.dz);
+
+        // create clones of self.ey at n and n-1 for use in mur ABC
+        let mut ey_n: ScalarField = self.ey.clone();
+        let mut ey_n_1: ScalarField = ey_n.clone();
+
+        // log basic time loop stats to stdout //TODO this could be removed
         println!("time steps: {}, dt: {}[s]", time_steps, dt);
-        println!("beginning time loop");
+        println!("\nbeginning time loop");
 
         // time loop
         for t in 0..time_steps {
@@ -350,6 +363,13 @@ impl Engine {
 
             // update electric field
             self.update_e(&geometry, &ea, &eb)?;
+
+            // update Mur ABC
+            self.update_mur_abc(geometry, abc1, abc2, abc3, abc4, &ey_n, &ey_n_1)?;
+
+            // update clones of Ey for Mur ABC
+            ey_n_1 = ey_n.clone();
+            ey_n = self.ey.clone();
 
             // update current engine time after electric field update
             self.cur_time += ONE_OVER_TWO * dt;
@@ -731,5 +751,38 @@ impl Engine {
     fn tapered_sin(&self, config: &Config) -> f64 {
         (1.0 - E.powf(-(self.cur_time - config.delay_time) / (config.ramp_time)))
             * (TAU * config.frequency * self.cur_time).sin()
+    }
+
+    fn update_mur_abc(
+        &mut self,
+        geometry: &Geometry,
+        abc1: f64,
+        abc2: f64,
+        abc3: f64,
+        abc4: f64,
+        ey_n: &ScalarField,
+        ey_n_1: &ScalarField,
+    ) -> Result<()> {
+        for j in 1..geometry.num_vox_y {
+            for i in 1..geometry.num_vox_x {
+                *self.ey.idxm(i, j, 0) = -ey_n_1.idx(i, j, 1)
+                    + abc1 * (self.ey.idx(i, j, 1) + ey_n_1.idx(i, j, 0))
+                    + abc2 * (ey_n.idx(i, j, 0) + ey_n.idx(i, j, 1))
+                    + abc3
+                        * (ey_n.idx(i, j + 1, 0) - 2.0 * ey_n.idx(i, j, 0)
+                            + ey_n.idx(i, j - 1, 0)
+                            + ey_n.idx(i, j + 1, 1)
+                            - 2.0 * ey_n.idx(i, j, 1)
+                            + ey_n.idx(i, j - 1, 0))
+                    + abc4
+                        * (ey_n.idx(i + 1, j, 0) - 2.0 * ey_n.idx(i, j, 0)
+                            + ey_n.idx(i - 1, j, 0)
+                            + ey_n.idx(i + 1, j, 1)
+                            - 2.0 * ey_n.idx(i, j, 1)
+                            + ey_n.idx(i - 1, j, 1));
+            }
+        }
+
+        Ok(())
     }
 }

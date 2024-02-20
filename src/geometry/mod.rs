@@ -15,15 +15,17 @@ use anyhow::{Ok, Result};
 /// additionally not all fields of this struct are needed, however they are kept anyway as they could be useful in the future if this is ever expanded
 #[derive(Debug)]
 pub struct Geometry {
-    pub ep: f64,     // [F/m] diagonally isotropic permittivity of material inside waveguide
-    pub mu: f64,     // [H/m] diagonally isotropic permeability of material inside waveguide
-    pub sigma: f64,  // [S/m] diagonally isotropic conductivity of material inside waveguide
-    pub x_len: f64,  // [m] length of waveguide in the x-direction
-    pub y_len: f64,  // [m] length of waveguide in the y-direction
-    pub z_len: f64,  // [m] length of waveguide in the z-direction
-    pub dx: f64,     // [m] spatial increment in x-direction
-    pub dy: f64,     // [m] spatial increment in x-direction
-    pub dz: f64,     // [m] spatial increment in x-direction
+    pub ep: f64, // [F/m] diagonally isotropic permittivity of material inside waveguide
+    pub mu: f64, // [H/m] diagonally isotropic permeability of material inside waveguide
+    pub ep_r: f64, // [] relative diagonally isotropic permittivity of material inside waveguide
+    pub mu_r: f64,  // [] relative diagonally isotropic permeability of material inside waveguide
+    pub sigma: f64, // [S/m] diagonally isotropic conductivity of material inside waveguide
+    pub x_len: f64, // [m] length of waveguide in the x-direction
+    pub y_len: f64, // [m] length of waveguide in the y-direction
+    pub z_len: f64, // [m] length of waveguide in the z-direction
+    pub dx: f64,    // [m] spatial increment in x-direction
+    pub dy: f64,    // [m] spatial increment in x-direction
+    pub dz: f64,    // [m] spatial increment in x-direction
     pub dx_inv: f64, // [m^-1] inverse spatial increment in x-direction
     pub dy_inv: f64, // [m^-1] inverse spatial increment in y-direction
     pub dz_inv: f64, // [m^-1] inverse spatial increment in z-direction
@@ -141,6 +143,8 @@ impl Geometry {
         Ok(Geometry {
             ep,
             mu,
+            ep_r,
+            mu_r,
             sigma,
             x_len,
             y_len,

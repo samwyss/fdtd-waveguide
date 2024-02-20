@@ -6,9 +6,9 @@ data = readdlm("./out/ey.csv", ',', Float64, '\n')
 
 # constants
 #time = 4
-x_size = 66
-y_size = 33
-z_size = 668
+x_size = 14
+y_size = 7
+z_size = 67
 
 fig = Figure()
 ax = LScene(fig[1, 1], show_axis=false)
@@ -36,8 +36,8 @@ data_slice = @lift(data[$time, :])
 # reorder into volume
 data_vol = @lift(reshape($data_slice, (x_size, y_size, z_size)))
 
-low = -0.1
-high = 0.1
+low = -1
+high = 1
 
 vol = data_vol#[cos(X)*sin(Y)*sin(Z) for X ∈ x, Y ∈ y, Z ∈ z]
 plt = volumeslices!(ax, x, y, z, vol, colormap=:coolwarm, colorrange=(low,high), interpolate=true) #interpolate=true
