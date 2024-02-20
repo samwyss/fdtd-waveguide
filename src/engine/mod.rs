@@ -133,7 +133,7 @@ impl Engine {
     ///
     /// # Errors
     /// - any `ScalarField` constructors error
-    /// - `fs::create_dir()` is unable to create directory "./out"
+    /// -`fs::create_dir()` is unable to create directory "./out"
     /// - creation of any file descriptors fail
     pub fn new(config: &Config, geometry: &Geometry) -> Result<Engine> {
         // assign cur_time to 0 as that is initial state of engine
@@ -341,7 +341,7 @@ impl Engine {
         let abc4 = ((c_mur * dt).powi(2) * geometry.dz)
             / (2.0 * (geometry.dx).powi(2) * c_mur * dt + geometry.dz);
 
-        // create clones of self.ey at n and n-1 for use in mur ABC
+        // create clones of self.ey at n and n-1 for use in Mur ABC
         let mut ey_n: ScalarField = self.ey.clone();
         let mut ey_n_1: ScalarField = ey_n.clone();
 
@@ -354,8 +354,8 @@ impl Engine {
             // update magnetic field
             self.update_h(&geometry, &hax, &hay, &haz)?;
 
-            // update TFSF source
-            self.update_tfsf_source(&config, &geometry, &haz)?;
+            // update TFSF source by correcting the curl of Hx and Hz for an Ey driver source
+            self.update_tfsf_source(&config, &geometry, &hay)?;
 
             // update current engine time after magnetic field update
             self.cur_time += ONE_OVER_TWO * dt;
