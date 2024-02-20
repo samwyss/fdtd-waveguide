@@ -10,6 +10,8 @@ high = 0.1
 slice = 4
 
 plt.rcParams["text.usetex"] = True
+a = 0.19558
+z_len = 1
 
 ey = np.loadtxt("./out/ey.csv", delimiter=",", encoding="UTF-8")
 ey_slice = ey[time].reshape((x_size, y_size, z_size), order="F")[:, slice, :]
@@ -23,6 +25,6 @@ ax.set_xlabel(r"$\hat{z}$-Position [m]")
 ax.set_ylabel(r"$\hat{x}$-Position [m]")
 plt.minorticks_on()
 
-ax.imshow(ey_slice, cmap="coolwarm", vmax=high, vmin=low, extent=[0, 2, 0, 0.19558])
+ax.imshow(ey_slice, cmap="coolwarm", vmax=high, vmin=low, extent=[0, z_len, 0, a])
 
 plt.show()

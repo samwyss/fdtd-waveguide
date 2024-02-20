@@ -15,6 +15,6 @@ mu_r = 1                        # [] diagonally isotropic relative permeability 
 sigma = 0                       # [S/m] diagonally isotropic conductivity of material
 
 # tapered sin driver function parameters
-frequency = 1e9
+frequency = 1.2e9
 delay_time = 1e-10
 ramp_time = 1e-9
