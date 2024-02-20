@@ -36,8 +36,11 @@ data_slice = @lift(data[$time, :])
 # reorder into volume
 data_vol = @lift(reshape($data_slice, (x_size, y_size, z_size)))
 
+low = -0.1
+high = 0.1
+
 vol = data_vol#[cos(X)*sin(Y)*sin(Z) for X ∈ x, Y ∈ y, Z ∈ z]
-plt = volumeslices!(ax, x, y, z, vol, colormap=:coolwarm, colorrange=(-0.01,0.01), interpolate=true) #interpolate=true
+plt = volumeslices!(ax, x, y, z, vol, colormap=:coolwarm, colorrange=(low,high), interpolate=true) #interpolate=true
 
 # connect sliders to `volumeslices` update methods
 sl_yz, sl_xz, sl_xy = sgrid.sliders
@@ -80,6 +83,8 @@ toggles = [Toggle(lo[i, nc + 1], active = true) for i ∈ 1:length(hmaps)]
 map(zip(hmaps, toggles)) do (h, t)
     connect!(h.visible, t.active)
 end
+
+cam3d!(ax.scene, projectiontype=Makie.Orthographic)
 
 # cam3d!(ax.scene, projectiontype=Makie.Orthographic)
 
