@@ -2,7 +2,7 @@
 //!
 //! Acts as a high level interface for controlling the simulation
 
-// import local crates and modules
+// import local modules and crates
 use super::{engine::Engine, geometry::Geometry};
 use anyhow::{anyhow, Ok, Result};
 use serde_derive::Deserialize;
@@ -18,7 +18,7 @@ use toml::from_str;
 pub struct Solver {
     geometry: Geometry, // Geometry struct containing all data & code pertaining to the geometry of the simulation (see ./src/geometry/mod.rs)
     engine: Engine, // Engine struct containing all data relevant to the state of the simulation and code needed to evolve said state (see ./src/engine/mod.rs)
-    config: Config,
+    config: Config, // Config struct, used to bootstrap the creation of Geometry and Engine (see Config struct below)
 }
 
 impl Solver {
@@ -34,11 +34,14 @@ impl Solver {
     ///
     /// # Errors
     ///
+    /// - `Geometry::new()` errors
+    /// - `Engine::new()` errors
+    ///
     pub fn new(config: Config) -> Result<Solver> {
-        // create a new geometry for given configuration (see ./src/geometry/mod.rs)
+        // create a new geometry for given configuration (see ./src/geometry/mod.rs) using config as bootstrap
         let geometry = Geometry::new(&config)?;
 
-        // create a new engine for the given geometry (see ./src/engine/mod.rs)
+        // create a new engine for the given geometry (see ./src/engine/mod.rs) using config and geometry as bootstrap
         let engine = Engine::new(&config, &geometry)?;
 
         Ok(Solver {
@@ -48,6 +51,19 @@ impl Solver {
         })
     }
 
+    /// calls all relevant methods to update the simulation to a given time step
+    ///
+    /// # Arguments
+    ///
+    /// # Returns
+    ///
+    /// `Result<()>`
+    ///
+    /// # Errors
+    ///
+    /// - `Geometry::new()` errors
+    /// - `Engine::new()` errors
+    ///
     pub fn update(&mut self) -> Result<()> {
         // update the engine to the target time
         self.engine.update(&self.config, &self.geometry)?;
@@ -56,9 +72,11 @@ impl Solver {
     }
 }
 
-/// Config Struct
+/// Config struct
 ///
-/// Contains all data imported from ./config.toml which is used to derive other simulation structures
+/// contains all data imported from ./config.toml which is used to bootstrap other simulation structures
+///
+/// if I had more time, I would rewrite other structures to not use this struct past the bootstrapping stage
 #[derive(Debug, Deserialize)]
 pub struct Config {
     pub max_frequency: f64,               // [Hz] maximum frequency to resolve
