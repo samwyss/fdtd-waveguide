@@ -18,6 +18,7 @@ use toml::from_str;
 pub struct Solver {
     geometry: Geometry, // Geometry struct containing all data & code pertaining to the geometry of the simulation (see ./src/geometry/mod.rs)
     engine: Engine, // Engine struct containing all data relevant to the state of the simulation and code needed to evolve said state (see ./src/engine/mod.rs)
+    config: Config,
 }
 
 impl Solver {
@@ -33,19 +34,23 @@ impl Solver {
     ///
     /// # Errors
     ///
-    pub fn new(config: &Config) -> Result<Solver> {
+    pub fn new(config: Config) -> Result<Solver> {
         // create a new geometry for given configuration (see ./src/geometry/mod.rs)
         let geometry = Geometry::new(&config)?;
 
         // create a new engine for the given geometry (see ./src/engine/mod.rs)
         let engine = Engine::new(&config, &geometry)?;
 
-        Ok(Solver { geometry, engine })
+        Ok(Solver {
+            config,
+            geometry,
+            engine,
+        })
     }
 
-    pub fn update(&mut self, target_time: &f64) -> Result<()> {
+    pub fn update(&mut self) -> Result<()> {
         // update the engine to the target time
-        self.engine.update(&self.geometry, &target_time)?;
+        self.engine.update(&self.config, &self.geometry)?;
 
         Ok(())
     }
@@ -66,7 +71,10 @@ pub struct Config {
     pub mu_r: f64,  // [] diagonally isotropic relative permeability inside waveguide
     pub sigma: f64, // [S/m] diagonally isotropic conductivity of material
     pub snapshot_steps: usize,
-    pub end_time: f64,         // [s] end time of the simulation
+    pub end_time: f64, // [s] end time of the simulation
+    pub frequency: f64,
+    pub delay_time: f64,
+    pub ramp_time: f64,
 }
 
 impl Config {

@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-time = 50
+time = 19
 x_size = 33
 y_size = 17
 z_size = 334

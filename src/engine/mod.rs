@@ -12,7 +12,7 @@ const TFSF_SRC_END_OFFSET: usize = 3;
 use crate::{geometry::Geometry, helpers::write_buf_vec, solver::Config, C_0};
 use anyhow::{Ok, Result};
 use csv::WriterBuilder;
-use std::f64::consts::{PI, TAU};
+use std::f64::consts::{E, PI, TAU};
 use std::fs::{create_dir, remove_dir_all, File, OpenOptions};
 use std::io::BufWriter;
 
@@ -168,17 +168,17 @@ impl Engine {
         })
     }
 
-    pub fn update(&mut self, geometry: &Geometry, target_time: &f64) -> Result<()> {
+    pub fn update(&mut self, config: &Config, geometry: &Geometry) -> Result<()> {
         // calculate first pass at time step based on Courant–Friedrichs–Lewy stability condition
         let mut dt: f64 = (C_0
             * (geometry.dx_inv.powi(2) + geometry.dy_inv.powi(2) + geometry.dz_inv.powi(2)).sqrt())
         .powi(-1);
 
         // snap this time step to a specific number of loop iterations using target_time
-        let time_steps: usize = (target_time / dt).ceil() as usize;
+        let time_steps: usize = (config.end_time / dt).ceil() as usize;
 
         // recalculate the time step based on the snapped number of loop iterations
-        dt = target_time / time_steps as f64;
+        dt = config.end_time / time_steps as f64;
 
         // calculate the number of steps between each snapshot
         let snapshot_mod_steps: usize;
@@ -205,7 +205,7 @@ impl Engine {
             self.update_h(&geometry, &hax, &hay, &haz)?;
 
             // update TFSF source
-            self.update_tfsf_source(&geometry, &haz)?;
+            self.update_tfsf_source(&config, &geometry, &haz)?;
 
             // update current engine time after magnetic field update
             self.cur_time += ONE_OVER_TWO * dt;
@@ -539,35 +539,45 @@ impl Engine {
         Ok(())
     }
 
-    fn update_tfsf_source(&mut self, geometry: &Geometry, hay: &f64) -> Result<()> {
+    fn update_tfsf_source(
+        &mut self,
+        config: &Config,
+        geometry: &Geometry,
+        hay: &f64,
+    ) -> Result<()> {
         // inject Ey field into Hx, Hz as source field
         for j in 1..(geometry.num_vox_y - 1) {
             for i in 1..(geometry.num_vox_x - 1) {
                 // scattered field corrections
                 *self.hx.idxm(i, j, geometry.num_vox_z - TFSF_SRC_END_OFFSET) -= hay
-                    * (TAU * 1.2e9 * self.cur_time).sin()
+                    * self.tapered_sin(config)
                     * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
 
                 *self.hz.idxm(i, j, geometry.num_vox_z - TFSF_SRC_END_OFFSET) -= hay
-                    * (TAU * 1.2e9 * self.cur_time).sin()
+                    * self.tapered_sin(config)
                     * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
 
                 // total field corrections
                 *self
                     .hx
                     .idxm(i, j, geometry.num_vox_z - TFSF_SRC_END_OFFSET - 1) += hay
-                    * (TAU * 1.2e9 * self.cur_time).sin()
+                    * self.tapered_sin(config)
                     * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
 
                 *self
                     .hz
                     .idxm(i, j, geometry.num_vox_z - TFSF_SRC_END_OFFSET - 1) += hay
-                    * (TAU * 1.2e9 * self.cur_time).sin()
+                    * self.tapered_sin(config)
                     * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
             }
         }
 
         Ok(())
+    }
+
+    fn tapered_sin(&self, config: &Config) -> f64 {
+        (1.0 - E.powf(-(self.cur_time - config.delay_time) / (config.ramp_time)))
+            * (TAU * config.frequency * self.cur_time).sin()
     }
 }
 

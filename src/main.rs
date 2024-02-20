@@ -23,10 +23,10 @@ fn main() -> Result<()> {
     let config: Config = Config::new("./config.toml")?;
 
     // construct new solver
-    let mut solver = Solver::new(&config)?;
+    let mut solver = Solver::new(config)?;
 
     // update solver to a target_time
-    solver.update(&config.end_time)?;
+    solver.update()?;
 
     Ok(())
 }
