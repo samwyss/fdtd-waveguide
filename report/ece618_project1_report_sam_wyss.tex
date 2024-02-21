@@ -43,7 +43,7 @@
 % paper title
 % can use linebreaks \\ within to get better formatting as desired
 % Generally good to not put math or special symbols in the title.
-\title{Add a Good Title Here}
+\title{3D FDTD Analysis of $\mathrm{TE_{01}}$ Mode Propagation in X-Band Rectangular Waveguides}
 
 % I'm mashing some templates together here. If you write an actual IEEE transactions paper in LaTeX start from their template and then modify things like packages and files you want to include from there as opposed to starting from this document provided in this course.
 \author{
@@ -68,16 +68,18 @@ Write your abstract text here.
 
 % the \input command allows you to tell the compiler to go through the .tex file placed in the command. Breaking out your main sections of the paper in this way helps keep the code/tex document more organized typically.
 %\input{getting-started}
-%\input{intro}
+\input{intro}
+\input{mathematical-model.tex}
+\input{numerical-results.tex}
 %\input{equations}
 %\input{figures}
 %\input{reference-management}
-%\input{conclusion}
-\input{waveport_bc.tex}
+\input{conclusion}
+\input{appendix.tex}
 
 
-%\bibliographystyle{IEEEtran}
-%\bibliography{cem_class_example_bib} %this should point to your bibliography file.
+\bibliographystyle{IEEEtran}
+\bibliography{cem_class_example_bib} %this should point to your bibliography file.
 
 % that's all folks
 \end{document}
