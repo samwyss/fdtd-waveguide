@@ -885,16 +885,8 @@ impl Engine {
                     * self.tapered_sin(config)
                     * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
 
-                *self.hz.idxm(i, j, geometry.num_vox_z - 2) -= hay
-                    * self.tapered_sin(config)
-                    * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
-
                 // total field corrections
                 *self.hx.idxm(i, j, geometry.num_vox_z - 2 - 1) += hay
-                    * self.tapered_sin(config)
-                    * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
-
-                *self.hz.idxm(i, j, geometry.num_vox_z - 2 - 1) += hay
                     * self.tapered_sin(config)
                     * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
             }
