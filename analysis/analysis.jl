@@ -6,9 +6,9 @@ data = readdlm("./out/ey.csv", ',', Float64, '\n')
 
 # constants
 #time = 4
-x_size = 69
-y_size = 31
-z_size = 301
+x_size = 23
+y_size = 11
+z_size = 101
 
 fig = Figure()
 ax = LScene(fig[1, 1], show_axis=false)

@@ -305,6 +305,9 @@ impl Engine {
     ///
     /// # Errors
     ///
+    /// - any `snapshot_fields()` call errors
+    /// - `flush_fields()` call errors
+    ///
     pub fn update(&mut self, config: &Config, geometry: &Geometry) -> Result<()> {
         // calculate first pass at time step based on Courant–Friedrichs–Lewy stability condition
         let mut dt: f64 = (C_0
@@ -326,20 +329,20 @@ impl Engine {
         }
 
         // pre-process loop constants
-        let ea: f64 = (geometry.ep / dt + geometry.sigma / 2.0).powi(-1);
-        let eb: f64 = geometry.ep / dt - geometry.sigma / 2.0;
-        let hax: f64 = dt * geometry.dx_inv / geometry.mu;
-        let hay: f64 = dt * geometry.dy_inv / geometry.mu;
-        let haz: f64 = dt * geometry.dz_inv / geometry.mu;
+        let ea: f64 = (geometry.ep / dt + geometry.sigma / 2.0).powi(-1); // electric field 'alpha' update coefficient
+        let eb: f64 = geometry.ep / dt - geometry.sigma / 2.0; // electric field 'beta' update coefficient
+        let hax: f64 = dt * geometry.dx_inv / geometry.mu; // Hx update coefficient
+        let hay: f64 = dt * geometry.dy_inv / geometry.mu; // Hy update coefficient
+        let haz: f64 = dt * geometry.dz_inv / geometry.mu; // Hz update coefficient
 
         // pre-process Mur ABC constants
-        let c_mur = C_0 / (geometry.mu_r * geometry.ep_r).sqrt();
-        let abc1 = (c_mur * dt - geometry.dz) / (c_mur * dt + geometry.dz);
-        let abc2 = (2.0 * geometry.dz) / (c_mur * dt + geometry.dz);
+        let c_mur = C_0 / (geometry.mu_r * geometry.ep_r).sqrt(); // [m/s] speed of light in dielectric inside waveguide
+        let abc1 = (c_mur * dt - geometry.dz) / (c_mur * dt + geometry.dz); // 1st Mur ABC update coefficient
+        let abc2 = (2.0 * geometry.dz) / (c_mur * dt + geometry.dz); // 2nd Mur ABC update coefficient
         let abc3 = ((c_mur * dt).powi(2) * geometry.dz)
-            / (2.0 * (geometry.dy).powi(2) * c_mur * dt + geometry.dz);
+            / (2.0 * (geometry.dy).powi(2) * c_mur * dt + geometry.dz); // 3rd Mur ABC update coefficient
         let abc4 = ((c_mur * dt).powi(2) * geometry.dz)
-            / (2.0 * (geometry.dx).powi(2) * c_mur * dt + geometry.dz);
+            / (2.0 * (geometry.dx).powi(2) * c_mur * dt + geometry.dz); // 4th Mur ABC update coefficient
 
         // create clones of self.ey at n and n-1 for use in Mur ABC
         let mut ey_n: ScalarField = self.ey.clone();
@@ -352,19 +355,19 @@ impl Engine {
         // time loop
         for t in 0..time_steps {
             // update magnetic field
-            self.update_h(&geometry, &hax, &hay, &haz)?;
+            self.update_h(&geometry, &hax, &hay, &haz);
 
             // update TFSF source by correcting the curl of Hx and Hz for an Ey driver source
-            self.update_tfsf_source(&config, &geometry, &hay)?;
+            self.update_tfsf_source(&config, &geometry, &hay);
 
             // update current engine time after magnetic field update
             self.cur_time += ONE_OVER_TWO * dt;
 
             // update electric field
-            self.update_e(&geometry, &ea, &eb)?;
+            self.update_e(&geometry, &ea, &eb);
 
             // update Mur ABC
-            self.update_mur_abc(geometry, abc1, abc2, abc3, abc4, &ey_n, &ey_n_1)?;
+            self.update_mur_abc(&geometry, &abc1, &abc2, &abc3, &abc4, &ey_n, &ey_n_1);
 
             // update clones of Ey for Mur ABC
             // TODO this can be improved by only keeping the desired array slice(s) instead of the entire field but this was convenient
@@ -416,7 +419,7 @@ impl Engine {
         Ok(())
     }
 
-    /// snapshots all field values
+    /// flushes remaining data in buffers to disk if present
     ///
     /// # Arguments
     ///
@@ -441,10 +444,22 @@ impl Engine {
         Ok(())
     }
 
-    fn write_buf_vec(
-        buffered_writer: &mut csv::Writer<BufWriter<File>>,
-        data: &[f64],
-    ) -> Result<()> {
+    /// writes data found in &[f64] into a buffered writer
+    ///
+    /// # Arguments
+    ///
+    /// `buffered_writer` &mut Writer<BufWriter<File>> mutable reference to a buffered writer
+    /// `data` &[f64] array slice to be written to disk
+    ///
+    /// # Returns
+    ///
+    /// `Result<()>`
+    ///
+    /// # Errors
+    ///
+    /// - `buffered_writer()` call fails
+    ///
+    fn write_buf_vec(buffered_writer: &mut Writer<BufWriter<File>>, data: &[f64]) -> Result<()> {
         // write data into buffered_writer
         buffered_writer
             .write_record(data.iter().map(|x| x.to_string()).collect::<Vec<String>>())?;
@@ -452,20 +467,49 @@ impl Engine {
         Ok(())
     }
 
-    fn update_h(&mut self, geometry: &Geometry, hax: &f64, hay: &f64, haz: &f64) -> Result<()> {
+    /// updates all magnetic field components using standard 3D Yee scheme
+    ///
+    /// # Arguments
+    ///
+    /// `&mut self` &mut Engine mutable reference to Engine struct
+    /// `geometry` &Geometry reference to a Geometry struct
+    /// `hax` &f64 reference to Hx update coefficient
+    /// `hay` &f64 reference to Hy update coefficient
+    /// `haz` &f64 reference to Hz update coefficient
+    ///
+    /// # Returns
+    ///
+    /// # Errors
+    ///
+    /// - Will not error, will panic at out of bounds accesses in `ScalarField.idx()` or `ScalarField.idxm()` calls inside of any field update equations
+    ///
+    fn update_h(&mut self, geometry: &Geometry, hax: &f64, hay: &f64, haz: &f64) {
         // update hx
-        self.update_hx(geometry, hay, haz)?;
+        self.update_hx(geometry, hay, haz);
 
         // update hy
-        self.update_hy(geometry, hax, haz)?;
+        self.update_hy(geometry, hax, haz);
 
         // update hz
-        self.update_hz(geometry, hax, hay)?;
-
-        Ok(())
+        self.update_hz(geometry, hax, hay);
     }
 
-    fn update_hx(&mut self, geometry: &Geometry, hay: &f64, haz: &f64) -> Result<()> {
+    /// updates all Hx components using standard 3D Yee scheme
+    ///
+    /// # Arguments
+    ///
+    /// `&mut self` &mut Engine mutable reference to Engine struct
+    /// `geometry` &Geometry reference to a Geometry struct
+    /// `hay` &f64 reference to Hy update coefficient
+    /// `haz` &f64 reference to Hz update coefficient
+    ///
+    /// # Returns
+    ///
+    /// # Errors
+    ///
+    /// - Will not error, will panic at out of bounds accesses in `ScalarField.idx()` or `ScalarField.idxm()` calls
+    ///
+    fn update_hx(&mut self, geometry: &Geometry, hay: &f64, haz: &f64) {
         for k in 0..(geometry.num_vox_z - 1) {
             for j in 0..(geometry.num_vox_y - 1) {
                 for i in 0..geometry.num_vox_x {
@@ -511,11 +555,24 @@ impl Engine {
                             .ey
                             .idx(i, geometry.num_vox_y - 1, geometry.num_vox_z - 1));
         }
-
-        Ok(())
     }
 
-    fn update_hy(&mut self, geometry: &Geometry, hax: &f64, haz: &f64) -> Result<()> {
+    /// updates all Hy components using standard 3D Yee scheme
+    ///
+    /// # Arguments
+    ///
+    /// `&mut self` &mut Engine mutable reference to Engine struct
+    /// `geometry` &Geometry reference to a Geometry struct
+    /// `hax` &f64 reference to Hx update coefficient
+    /// `haz` &f64 reference to Hz update coefficient
+    ///
+    /// # Returns
+    ///
+    /// # Errors
+    ///
+    /// - Will not error, will panic at out of bounds accesses in `ScalarField.idx()` or `ScalarField.idxm()` calls
+    ///
+    fn update_hy(&mut self, geometry: &Geometry, hax: &f64, haz: &f64) {
         for k in 0..(geometry.num_vox_z - 1) {
             for j in 0..geometry.num_vox_y {
                 for i in 0..(geometry.num_vox_x - 1) {
@@ -559,11 +616,24 @@ impl Engine {
                             .ez
                             .idx(geometry.num_vox_x - 1, j, geometry.num_vox_z - 1));
         }
-
-        Ok(())
     }
 
-    fn update_hz(&mut self, geometry: &Geometry, hax: &f64, hay: &f64) -> Result<()> {
+    // updates all Hz components using standard 3D Yee scheme
+    ///
+    /// # Arguments
+    ///
+    /// `&mut self` &mut Engine mutable reference to Engine struct
+    /// `geometry` &Geometry reference to a Geometry struct
+    /// `hax` &f64 reference to Hx update coefficient
+    /// `hay` &f64 reference to Hy update coefficient
+    ///
+    /// # Returns
+    ///
+    /// # Errors
+    ///
+    /// - Will not error, will panic at out of bounds accesses in `ScalarField.idx()` or `ScalarField.idxm()` calls
+    ///
+    fn update_hz(&mut self, geometry: &Geometry, hax: &f64, hay: &f64) {
         for k in 0..geometry.num_vox_z {
             for j in 0..(geometry.num_vox_y - 1) {
                 for i in 0..(geometry.num_vox_x - 1) {
@@ -603,24 +673,50 @@ impl Engine {
                             .ex
                             .idx(geometry.num_vox_x - 1, geometry.num_vox_y - 1, k));
         }
-
-        Ok(())
     }
 
-    fn update_e(&mut self, geometry: &Geometry, ea: &f64, eb: &f64) -> Result<()> {
+    /// updates all electric field components using standard 3D Yee scheme
+    ///
+    /// # Arguments
+    ///
+    /// `&mut self` &mut Engine mutable reference to Engine struct
+    /// `geometry` &Geometry reference to a Geometry struct
+    /// `ea` &f64 reference electric field 'alpha' update coefficient
+    /// `eb` &f64 reference electric field 'beta' update coefficient
+    ///
+    /// # Returns
+    ///
+    /// # Errors
+    ///
+    /// - Will not error, will panic at out of bounds accesses in `ScalarField.idx()` or `ScalarField.idxm()` calls inside of any field update equations
+    ///
+    fn update_e(&mut self, geometry: &Geometry, ea: &f64, eb: &f64) {
         // update ex
-        self.update_ex(geometry, &ea, &eb)?;
+        self.update_ex(geometry, &ea, &eb);
 
         // update ey
-        self.update_ey(geometry, &ea, &eb)?;
+        self.update_ey(geometry, &ea, &eb);
 
         // update ez
-        self.update_ez(geometry, &ea, &eb)?;
-
-        Ok(())
+        self.update_ez(geometry, &ea, &eb);
     }
 
-    fn update_ex(&mut self, geometry: &Geometry, ea: &f64, eb: &f64) -> Result<()> {
+    // updates all Ex components using standard 3D Yee scheme
+    ///
+    /// # Arguments
+    ///
+    /// `&mut self` &mut Engine mutable reference to Engine struct
+    /// `geometry` &Geometry reference to a Geometry struct
+    /// `ea` &f64 reference electric field 'alpha' update coefficient
+    /// `eb` &f64 reference electric field 'beta' update coefficient
+    ///
+    /// # Returns
+    ///
+    /// # Errors
+    ///
+    /// - Will not error, will panic at out of bounds accesses in `ScalarField.idx()` or `ScalarField.idxm()` calls
+    ///
+    fn update_ex(&mut self, geometry: &Geometry, ea: &f64, eb: &f64) {
         for k in 1..geometry.num_vox_z {
             for j in 1..geometry.num_vox_y {
                 // 0 is inside PEC
@@ -659,11 +755,24 @@ impl Engine {
                     - geometry.dz_inv * (self.hy.idx(i, 0, 0) - 0.0));
         }
         */
-
-        Ok(())
     }
 
-    fn update_ey(&mut self, geometry: &Geometry, ea: &f64, eb: &f64) -> Result<()> {
+    // updates all Ey components using standard 3D Yee scheme
+    ///
+    /// # Arguments
+    ///
+    /// `&mut self` &mut Engine mutable reference to Engine struct
+    /// `geometry` &Geometry reference to a Geometry struct
+    /// `ea` &f64 reference electric field 'alpha' update coefficient
+    /// `eb` &f64 reference electric field 'beta' update coefficient
+    ///
+    /// # Returns
+    ///
+    /// # Errors
+    ///
+    /// - Will not error, will panic at out of bounds accesses in `ScalarField.idx()` or `ScalarField.idxm()` calls
+    ///
+    fn update_ey(&mut self, geometry: &Geometry, ea: &f64, eb: &f64) {
         for k in 1..geometry.num_vox_z {
             // 0 is inside PEC
             for j in 1..geometry.num_vox_y {
@@ -699,11 +808,24 @@ impl Engine {
             }
         }
         */
-
-        Ok(())
     }
 
-    fn update_ez(&mut self, geometry: &Geometry, ea: &f64, eb: &f64) -> Result<()> {
+    // updates all Ez components using standard 3D Yee scheme
+    ///
+    /// # Arguments
+    ///
+    /// `&mut self` &mut Engine mutable reference to Engine struct
+    /// `geometry` &Geometry reference to a Geometry struct
+    /// `ea` &f64 reference electric field 'alpha' update coefficient
+    /// `eb` &f64 reference electric field 'beta' update coefficient
+    ///
+    /// # Returns
+    ///
+    /// # Errors
+    ///
+    /// - Will not error, will panic at out of bounds accesses in `ScalarField.idx()` or `ScalarField.idxm()` calls
+    ///
+    fn update_ez(&mut self, geometry: &Geometry, ea: &f64, eb: &f64) {
         // 0 is inside PEC
         for k in 1..geometry.num_vox_z {
             /* Removed as these field components stretch into PEC
@@ -737,16 +859,24 @@ impl Engine {
                 }
             }
         }
-
-        Ok(())
     }
 
-    fn update_tfsf_source(
-        &mut self,
-        config: &Config,
-        geometry: &Geometry,
-        hay: &f64,
-    ) -> Result<()> {
+    // injects an Ey source field into Hx, Hz using the TF/SF method with PEC boundary condition for waveguide source at z-high plane
+    ///
+    /// # Arguments
+    ///
+    /// `&mut self` &mut Engine mutable reference to Engine struct
+    /// `config` &Config reference to a Config struct
+    /// `geometry` &Geometry reference to a Geometry struct
+    /// `hay` &f64 reference to Hy update coefficient
+    ///
+    /// # Returns
+    ///
+    /// # Errors
+    ///
+    /// - Will not error, will panic at out of bounds accesses in `ScalarField.idx()` or `ScalarField.idxm()` calls
+    ///
+    fn update_tfsf_source(&mut self, config: &Config, geometry: &Geometry, hay: &f64) {
         // inject Ey field into Hx, Hz as source field
         for j in 1..(geometry.num_vox_y - 1) {
             for i in 1..(geometry.num_vox_x - 1) {
@@ -769,25 +899,53 @@ impl Engine {
                     * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
             }
         }
-
-        Ok(())
     }
 
+    /// computes the value of a tapered sin wave using parameters defined in Config struct
+    ///
+    /// # Arguments
+    ///
+    /// `self` &Engine reference to Engine struct
+    /// `config` &Config reference to a Config struct
+    ///
+    /// # Returns
+    ///
+    /// # Errors
+    ///
     fn tapered_sin(&self, config: &Config) -> f64 {
         (1.0 - E.powf(-(self.cur_time - config.delay_time) / (config.ramp_time)))
             * (TAU * config.frequency * self.cur_time).sin()
     }
 
+    // updates Ey field points on z-low plane using Mur ABC scheme
+    ///
+    /// # Arguments
+    ///
+    /// `&mut self` &mut Engine mutable reference to Engine structt
+    /// `geometry` &Geometry reference to a Geometry struct
+    /// `abc1` &f64 reference to 1st Mur ABC update coefficient
+    /// `abc2` &f64 reference to 2nd Mur ABC update coefficient
+    /// `abc3` &f64 reference to 3rd Mur ABC update coefficient
+    /// `abc4` &f64 reference to 4th Mur ABC update coefficient
+    /// `ey_n` &ScalarField reference to cloned Ey field at t=n
+    /// `ey_n_1` &ScalarField reference to cloned Ey field at t=n-1
+    ///
+    /// # Returns
+    ///
+    /// # Errors
+    ///
+    /// - Will not error, will panic at out of bounds accesses in `ScalarField.idx()` or `ScalarField.idxm()` calls
+    ///
     fn update_mur_abc(
         &mut self,
         geometry: &Geometry,
-        abc1: f64,
-        abc2: f64,
-        abc3: f64,
-        abc4: f64,
+        abc1: &f64,
+        abc2: &f64,
+        abc3: &f64,
+        abc4: &f64,
         ey_n: &ScalarField,
         ey_n_1: &ScalarField,
-    ) -> Result<()> {
+    ) {
         for j in 1..geometry.num_vox_y {
             for i in 1..geometry.num_vox_x {
                 *self.ey.idxm(i, j, 0) = -ey_n_1.idx(i, j, 1)
@@ -807,7 +965,5 @@ impl Engine {
                             + ey_n.idx(i - 1, j, 1));
             }
         }
-
-        Ok(())
     }
 }
