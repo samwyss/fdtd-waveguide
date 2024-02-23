@@ -23,7 +23,7 @@ ey = np.loadtxt("./out/ey.csv", delimiter=",", encoding="UTF-8")
 ey_chunk = []
 
 for time in range(len(ey[:, 0])):
-    ey_chunk.append(ey[time].reshape((x_size, y_size, z_size), order="F")[12, 6, -4])
+    ey_chunk.append(ey[time].reshape((x_size, y_size, z_size), order="F")[12, 6, 1])
 
 t_steps = len(ey_chunk)
 t = np.linspace(0, t_steps - 1, t_steps)
@@ -31,6 +31,28 @@ t = np.linspace(0, t_steps - 1, t_steps)
 
 # plt.show()
 
+# Compute the FFT
+fft_result = np.fft.fft(ey_chunk)
+frequencies = np.fft.fftfreq(
+    t_steps, d=time_step
+)  # Convert time step to sampling rate
+
+# Plot the results
+plt.figure(figsize=(10, 6))
+plt.subplot(2, 1, 1)
+plt.plot(t, ey_chunk)
+plt.xlabel("Time (s)")
+plt.ylabel("Amplitude")
+plt.title("Original Time Series Data")
+
+plt.subplot(2, 1, 2)
+plt.plot(frequencies, np.abs(fft_result))
+plt.xlabel("Frequency (Hz)")
+plt.ylabel("Amplitude")
+plt.title("Frequency Domain Representation (FFT)")
+
+plt.tight_layout()
+plt.show()
 
 # Compute the FFT
 fft_result = np.fft.fft(ey_chunk)
