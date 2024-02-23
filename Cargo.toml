@@ -19,3 +19,10 @@ serde = { version = "*" }
 serde_derive = { version = "*" }
 anyhow = { version = "*" }
 csv = {version = "*"}
+
+[build]
+rustflags = ["-C", "target-cpu=native"]
+
+[profile.release]
+codegen-units = 1
+lto = "fat"

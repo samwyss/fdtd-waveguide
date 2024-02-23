@@ -40,7 +40,7 @@ low = -0.1
 high = 0.1
 
 vol = data_vol#[cos(X)*sin(Y)*sin(Z) for X ∈ x, Y ∈ y, Z ∈ z]
-plt = volumeslices!(ax, x, y, z, vol, colormap=:coolwarm, colorrange=(low,high), interpolate=true) #interpolate=true
+plt = volumeslices!(ax, x, y, z, vol, colormap=:coolwarm, colorrange=(low,high)) #interpolate=true
 
 # connect sliders to `volumeslices` update methods
 sl_yz, sl_xz, sl_xy = sgrid.sliders

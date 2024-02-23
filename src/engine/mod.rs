@@ -881,12 +881,12 @@ impl Engine {
         for j in 1..(geometry.num_vox_y - 1) {
             for i in 1..(geometry.num_vox_x - 1) {
                 // scattered field corrections
-                *self.hx.idxm(i, j, geometry.num_vox_z - 2) -= hay
+                *self.hx.idxm(i, j, geometry.num_vox_z - 4) -= hay
                     * self.tapered_sin(config)
                     * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
 
                 // total field corrections
-                *self.hx.idxm(i, j, geometry.num_vox_z - 2 - 1) += hay
+                *self.hx.idxm(i, j, geometry.num_vox_z - 5) += hay
                     * self.tapered_sin(config)
                     * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
             }
