@@ -435,8 +435,8 @@ impl Engine {
     ///
     fn flush_fields(&mut self) -> Result<()> {
         self.hx_wtr.flush()?;
-        self.hx_wtr.flush()?;
         self.hy_wtr.flush()?;
+        self.hz_wtr.flush()?;
         self.ex_wtr.flush()?;
         self.ey_wtr.flush()?;
         self.ez_wtr.flush()?;
