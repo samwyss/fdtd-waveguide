@@ -4,6 +4,7 @@
 //!
 //! Operates on a Geometry (see ./src/geometry/mod.rs) and a Config (see ./src/solver/mod.rs).
 
+use crate::ETA_0;
 // import local modules and cargo crates
 use crate::{geometry::Geometry, solver::Config, C_0};
 use anyhow::{Ok, Result};
@@ -14,6 +15,7 @@ use std::io::BufWriter;
 
 // constant declarations
 const ONE_OVER_TWO: f64 = 1.0 / 2.0;
+const TFSF_SRC_IDX: usize = 10;
 
 /// ScalarField struct
 ///
@@ -354,17 +356,24 @@ impl Engine {
 
         // time loop
         for t in 0..time_steps {
+
+            // update current engine time before magnetic field update
+            self.cur_time += ONE_OVER_TWO * dt;
+
             // update magnetic field
             self.update_h(&geometry, &hax, &hay, &haz);
 
-            // update TFSF source by correcting the curl of Hx and Hz for an Ey driver source
-            self.update_tfsf_source(&config, &geometry, &hay);
+            // update TF/SF source by correcting the curl of Hx for an Ey driver source
+            self.update_tfsf_source_hx(&config, &geometry, &hay);
 
-            // update current engine time after magnetic field update
+            // update current engine time before electric field update
             self.cur_time += ONE_OVER_TWO * dt;
 
             // update electric field
             self.update_e(&geometry, &ea, &eb);
+
+            // update TF/SF source by correcting the curl of Ey for Hx driver source
+            self.update_tfsf_source_ey(config, geometry, &dt);
 
             // update Mur ABC
             self.update_mur_abc(&geometry, &abc1, &abc2, &abc3, &abc4, &ey_n, &ey_n_1);
@@ -373,9 +382,6 @@ impl Engine {
             // TODO this can be improved by only keeping the desired array slice(s) instead of the entire field but this was convenient
             ey_n_1 = ey_n.clone();
             ey_n = self.ey.clone();
-
-            // update current engine time after electric field update
-            self.cur_time += ONE_OVER_TWO * dt;
 
             // conditionally snapshot all field values
             if t % snapshot_mod_steps == 0 {
@@ -861,7 +867,7 @@ impl Engine {
         }
     }
 
-    // injects an Ey source field into Hx, Hz using the TF/SF method with PEC boundary condition for waveguide source at z-high plane
+    // injects an Ey source field into Hx using the TF/SF method with for waveguide source at z-high plane
     ///
     /// # Arguments
     ///
@@ -876,17 +882,51 @@ impl Engine {
     ///
     /// - Will not error, will panic at out of bounds accesses in `ScalarField.idx()` or `ScalarField.idxm()` calls
     ///
-    fn update_tfsf_source(&mut self, config: &Config, geometry: &Geometry, hay: &f64) {
+    fn update_tfsf_source_hx(&mut self, config: &Config, geometry: &Geometry, hay: &f64) {
         // inject Ey field into Hx, Hz as source field
         for j in 1..(geometry.num_vox_y - 1) {
             for i in 1..(geometry.num_vox_x - 1) {
                 // scattered field corrections
-                *self.hx.idxm(i, j, geometry.num_vox_z - 4) -= hay
+                *self.hx.idxm(i, j, geometry.num_vox_z - TFSF_SRC_IDX) += hay
                     * self.tapered_sin(config)
                     * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
 
                 // total field corrections
-                *self.hx.idxm(i, j, geometry.num_vox_z - 5) += hay
+                *self.hx.idxm(i, j, geometry.num_vox_z - TFSF_SRC_IDX - 1) -= hay
+                    * self.tapered_sin(config)
+                    * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
+            }
+        }
+    }
+
+    /// injects an Hx source field into Ey using the TF/SF method for waveguide source at z-high plane
+    ///
+    /// # Arguments
+    ///
+    /// `&mut self` &mut Engine mutable reference to Engine struct
+    /// `config` &Config reference to a Config struct
+    /// `geometry` &Geometry reference to a Geometry struct
+    /// `hay` &f64 reference to Hy update coefficient
+    ///
+    /// # Returns
+    ///
+    /// # Errors
+    ///
+    /// - Will not error, will panic at out of bounds accesses in `ScalarField.idx()` or `ScalarField.idxm()` calls
+    ///
+    fn update_tfsf_source_ey(&mut self, config: &Config, geometry: &Geometry, dt: &f64) {
+        // inject Ey field into Hx, Hz as source field
+        for j in 1..(geometry.num_vox_y - 1) {
+            for i in 1..(geometry.num_vox_x - 1) {
+                // scattered field corrections
+                *self.ey.idxm(i, j, geometry.num_vox_z - TFSF_SRC_IDX) += (dt / (geometry.ep * geometry.dy))
+                    * (ETA_0 * (geometry.mu_r / geometry.ep_r).sqrt()).powi(-1)
+                    * self.tapered_sin(config)
+                    * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
+
+                // total field corrections
+                *self.ey.idxm(i, j, geometry.num_vox_z - TFSF_SRC_IDX - 1) -= (dt / (geometry.ep * geometry.dy))
+                    * (ETA_0 * (geometry.mu_r / geometry.ep_r).sqrt()).powi(-1)
                     * self.tapered_sin(config)
                     * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
             }

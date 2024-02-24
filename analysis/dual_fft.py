@@ -2,12 +2,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 time = 150
-x_size = 14
-y_size = 7
-z_size = 67
+x_size = 23
+y_size = 11
+z_size = 101
 low = -0.1
 high = 0.1
-y_slice = 4
+y_slice = 6
 x_size = 23
 y_size = 11
 z_size = 101
@@ -25,10 +25,10 @@ ey_chunk_out = []
 
 for time in range(len(ey[:, 0])):
     ey_chunk_src.append(
-        ey[time].reshape((x_size, y_size, z_size), order="F")[12, 6, -3]
+        ey[time].reshape((x_size, y_size, z_size), order="F")[12, 6, -15]
     )
     ey_chunk_out.append(
-        ey[time].reshape((x_size, y_size, z_size), order="F")[12, 6, 3]
+        ey[time].reshape((x_size, y_size, z_size), order="F")[12, 6, 15]
     )
 
 
@@ -49,7 +49,6 @@ frequencies = np.fft.fftfreq(
 fft_magnitude1 = np.abs(fft_result1)
 fft_magnitude2 = np.abs(fft_result2)
 max_magnitude1 = np.max(fft_magnitude1)
-fft_magnitude_normalized = fft_magnitude2 / max_magnitude1
 
 # Filter frequencies within the desired range (0 to 20 GHz)
 desired_freq_range = (0, 15e9)  # 20 GHz
@@ -61,13 +60,13 @@ valid_indices = np.where(
 plt.figure(figsize=(10, 6))
 plt.plot(
     frequencies[valid_indices],
-    fft_magnitude_normalized[valid_indices],
-    label="Normalized Spectrum 2",
+    fft_magnitude2[valid_indices],
+    label="Outport Spectrum",
 )
 plt.plot(
     frequencies[valid_indices],
     fft_magnitude1[valid_indices],
-    label="Spectrum 1 (Reference)",
+    label="Source Spectrum",
 )  # Add the vertical line
 plt.xlabel("Frequency (Hz)")
 plt.ylabel("Normalized Amplitude")
