@@ -47,9 +47,9 @@ where $\sigma$ is the diagonally-isotropic, time-invariant dielectric conductivi
     \label{eq:ampere-final}
 \end{align}
 \begin{align}
-    \nabla\times\textbf{E}=-\mu\frac{\partial\textbf{H}}{\partial t}
+    \nabla\times\textbf{E}=-\mu\frac{\partial\textbf{H}}{\partial t}.
     \label{eq:faraday-final}
-\end{align}.
+\end{align}
 
 Each of these 3D vector equations can be broken down into $\hat{x}$, $\hat{y}$, and $\hat{z}$ component equations; the $\hat{y}$ components of \textbf{E} and \textbf{H} in Eqs. (\ref{eq:ampere-final})-(\ref{eq:faraday-final}) are
 \begin{align}
@@ -68,17 +68,20 @@ These scalar equations are valid for all locations within the dielectric region 
 	E_x=E_y=0.
 	\label{eq:dirichlet}
 \end{align}
+This Dirichlet boundary condition originates from the conservation of tangential electric fields at medium boundaries 
+\begin{align}
+	\hat{n}\times\textbf{E}_1=\hat{n}\times\textbf{E}_2.
+	\label{eq:electricbc}
+\end{align}
+By nature of their infinite conductivity, electric fields cannot exist within in the PEC walls thus Eq. (\ref{eq:electricbc}) gives rise to Eq. (\ref{eq:dirichlet}).
 
 \subsubsection{TF/SF 1-way Source}
 \label{subsubsec:ftsf-mod}
-To inject energy into this system, a TF/SF scheme is used. For this particular application, the $E_y$ field is used as a wave-port source (\textbf{TODO: EXPAND ME}). All total $E_y$ field values are considered as a superposition of source field $E_{y,src}$ and that of a scattered field $E_{y,scat}$ as
-\begin{align}
-	E_y = E_{y,src} + E_{y,scat}.
-	\label{eq:tfsf-base}
-\end{align}
+One of the most popular formulations for injecting source fields into a simulation domain is via a TF/SF 1-way source \cite{taftlovefdtd}. The total-field, scattered-field formulation is built on the linearity of Maxwell's equations. Fields within the total-field region are a superposition of source fields and reflected fields where as fields in the scattered field only consist of those reflected off of materials within the simulation.
 
-https://www.tandfonline.com/doi/epdf/10.1163/156939300X00491?needAccess=true
+As shown in Fig. \ref{fig:model}, The TF/SF source is inroduced in a plane with a normal vector $\hat{n}=-\hat{z}$. As outlined in \cite{taftlovefdtd} fields may be introduced on such planes by fully specifying $E_x, E_y, H_x$ and $H_y$. For 
 
-ehere $E_{y,src}$ is injected into the system and the sca
 
-Satisfying boundary conditoons
+outlined in \cite{taftlovefdtd}
+
+Special care was taken to inject fields into this waveguide in a manner that respects Eqs. (\ref{eq:dirichlet}-\ref{eq:electricbc}) as to ensure all numerical results are physical.
