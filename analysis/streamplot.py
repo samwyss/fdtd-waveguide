@@ -3,7 +3,7 @@ from matplotlib import streamplot
 import matplotlib.pyplot as plt
 import numpy as np
 
-time = 30
+time = 400
 x_size = 23
 y_size = 11
 z_size = 101

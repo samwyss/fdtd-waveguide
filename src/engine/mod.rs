@@ -4,9 +4,8 @@
 //!
 //! Operates on a Geometry (see ./src/geometry/mod.rs) and a Config (see ./src/solver/mod.rs).
 
-use crate::ETA_0;
 // import local modules and cargo crates
-use crate::{geometry::Geometry, solver::Config, C_0};
+use crate::{geometry::Geometry, solver::Config, C_0, ETA_0};
 use anyhow::{Ok, Result};
 use csv::{Writer, WriterBuilder};
 use std::f64::consts::{E, PI, TAU};
@@ -356,7 +355,6 @@ impl Engine {
 
         // time loop
         for t in 0..time_steps {
-
             // update current engine time before magnetic field update
             self.cur_time += ONE_OVER_TWO * dt;
 
@@ -725,7 +723,6 @@ impl Engine {
     fn update_ex(&mut self, geometry: &Geometry, ea: &f64, eb: &f64) {
         for k in 1..geometry.num_vox_z {
             for j in 1..geometry.num_vox_y {
-                // 0 is inside PEC
                 for i in 1..geometry.num_vox_x {
                     // ex update equation for all non j-low, k-low volume
                     *self.ex.idxm(i, j, k) = ea
@@ -734,33 +731,7 @@ impl Engine {
                             - geometry.dz_inv * (self.hy.idx(i, j, k) - self.hy.idx(i, j, k - 1)));
                 }
             }
-            /* Removed as these field components stretch into PEC
-            for i in 0..geometry.num_vox_x {
-                // ex update equation for j-low surface
-                *self.ex.idxm(i, 0, k) = ea
-                    * (eb * self.ex.idx(i, 0, k) + geometry.dy_inv * (self.hz.idx(i, 0, k) - 0.0)
-                        - geometry.dz_inv * (self.hy.idx(i, 0, k) - self.hy.idx(i, 0, k - 1)));
-            }
-            */
         }
-        /* Removed as these field components stretch into PEC
-        for j in 1..geometry.num_vox_y {
-            for i in 0..geometry.num_vox_x {
-                // ex update equation for k-low surface
-                *self.ex.idxm(i, j, 0) = ea
-                    * (eb * self.ex.idx(i, j, 0)
-                        + geometry.dy_inv * (self.hz.idx(i, j, 0) - self.hz.idx(i, j - 1, 0))
-                        - geometry.dz_inv * (self.hy.idx(i, j, 0) - 0.0));
-            }
-        }
-
-        for i in 0..geometry.num_vox_x {
-            // ex update for j-low, k-low line
-            *self.ex.idxm(i, 0, 0) = ea
-                * (eb * self.ex.idx(i, 0, 0) + geometry.dy_inv * (self.hz.idx(i, 0, 0) - 0.0)
-                    - geometry.dz_inv * (self.hy.idx(i, 0, 0) - 0.0));
-        }
-        */
     }
 
     // updates all Ey components using standard 3D Yee scheme
@@ -780,16 +751,7 @@ impl Engine {
     ///
     fn update_ey(&mut self, geometry: &Geometry, ea: &f64, eb: &f64) {
         for k in 1..geometry.num_vox_z {
-            // 0 is inside PEC
             for j in 1..geometry.num_vox_y {
-                /* Removed as these field components stretch into PEC
-                // ey update equation for i-low surface
-                *self.ey.idxm(0, j, k) = ea
-                    * (eb * self.ey.idx(0, j, k)
-                        + geometry.dz_inv * (self.hx.idx(0, j, k) - self.hx.idx(0, j, k - 1))
-                        - geometry.dx_inv * (self.hz.idx(0, j, k) - 0.0));
-                */
-
                 for i in 1..geometry.num_vox_x {
                     // ey update equation for all non i-low, k-low volume
                     *self.ey.idxm(i, j, k) = ea
@@ -799,21 +761,6 @@ impl Engine {
                 }
             }
         }
-        /* Removed as these field components stretch into PEC
-        for j in 0..geometry.num_vox_y {
-            // ey update equation for i-low, k-low line
-            *self.ey.idxm(0, j, 0) = ea
-                * (eb * self.ey.idx(0, j, 0) + geometry.dz_inv * (self.hx.idx(0, j, 0) - 0.0)
-                    - geometry.dx_inv * (self.hz.idx(0, j, 0) - 0.0));
-
-            for i in 1..geometry.num_vox_x {
-                // ey update equation for k-low surface
-                *self.ey.idxm(i, j, 0) = ea
-                    * (eb * self.ey.idx(i, j, 0) + geometry.dz_inv * (self.hx.idx(i, j, 0) - 0.0)
-                        - geometry.dx_inv * (self.hz.idx(i, j, 0) - self.hz.idx(i - 1, j, 0)));
-            }
-        }
-        */
     }
 
     // updates all Ez components using standard 3D Yee scheme
@@ -832,30 +779,8 @@ impl Engine {
     /// - Will not error, will panic at out of bounds accesses in `ScalarField.idx()` or `ScalarField.idxm()` calls
     ///
     fn update_ez(&mut self, geometry: &Geometry, ea: &f64, eb: &f64) {
-        // 0 is inside PEC
         for k in 1..geometry.num_vox_z {
-            /* Removed as these field components stretch into PEC
-            // ez update equation for i-low, j-low line
-            *self.ez.idxm(0, 0, k) = ea
-                * (eb * self.ez.idx(0, 0, k) + geometry.dx_inv * (self.hy.idx(0, 0, k) - 0.0)
-                    - geometry.dy_inv * (self.hx.idx(0, 0, k) - 0.0));
-
-            // ez update equation for j-low surface
-            for i in 1..geometry.num_vox_x {
-                *self.ez.idxm(i, 0, k) = ea
-                    * (eb * self.ez.idx(i, 0, k)
-                        + geometry.dx_inv * (self.hy.idx(i, 0, k) - self.hy.idx(i - 1, 0, k))
-                        - geometry.dy_inv * (self.hx.idx(i, 0, k) - 0.0));
-            }
-            */
-
             for j in 1..geometry.num_vox_y {
-                /* Removed as these field components stretch into PEC
-                // ez update equation for i-low surface
-                *self.ez.idxm(0, j, k) = ea
-                    * (eb * self.ez.idx(0, j, k) + geometry.dx_inv * (self.hy.idx(0, j, k) - 0.0)
-                        - geometry.dy_inv * (self.hx.idx(0, j, k) - self.hx.idx(0, j - 1, k)));
-                */
                 for i in 1..geometry.num_vox_x {
                     // ez update equation for all non i-low, j-low volume
                     *self.ez.idxm(i, j, k) = ea
@@ -919,13 +844,15 @@ impl Engine {
         for j in 1..(geometry.num_vox_y - 1) {
             for i in 1..(geometry.num_vox_x - 1) {
                 // scattered field corrections
-                *self.ey.idxm(i, j, geometry.num_vox_z - TFSF_SRC_IDX) += (dt / (geometry.ep * geometry.dy))
+                *self.ey.idxm(i, j, geometry.num_vox_z - TFSF_SRC_IDX) += (dt
+                    / (geometry.ep * geometry.dy))
                     * (ETA_0 * (geometry.mu_r / geometry.ep_r).sqrt()).powi(-1)
                     * self.tapered_sin(config)
                     * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
 
                 // total field corrections
-                *self.ey.idxm(i, j, geometry.num_vox_z - TFSF_SRC_IDX - 1) -= (dt / (geometry.ep * geometry.dy))
+                *self.ey.idxm(i, j, geometry.num_vox_z - TFSF_SRC_IDX - 1) -= (dt
+                    / (geometry.ep * geometry.dy))
                     * (ETA_0 * (geometry.mu_r / geometry.ep_r).sqrt()).powi(-1)
                     * self.tapered_sin(config)
                     * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
