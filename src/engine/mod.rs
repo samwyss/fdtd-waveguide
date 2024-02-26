@@ -13,8 +13,8 @@ use std::fs::{create_dir, remove_dir_all, File, OpenOptions};
 use std::io::BufWriter;
 
 // constant declarations
-const ONE_OVER_TWO: f64 = 1.0 / 2.0;
-const TFSF_SRC_IDX: usize = 10;
+const ONE_OVER_TWO: f64 = 1.0 / 2.0; // commonly used constant
+const TFSF_SRC_IDX: usize = 10; // offset for TF/SF 1-way source 
 
 /// ScalarField struct
 ///
