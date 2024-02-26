@@ -18,7 +18,7 @@ const TFSF_SRC_IDX: usize = 10;
 
 /// ScalarField struct
 ///
-/// Provides a no cost abstraction of a Vec<f64> to function as a 3D scalar field using Fortran-style ordering as this intuitively simpler than C-style in my opinion
+/// Provides a no cost abstraction of a Vec<f64> to function as a 3D scalar field using Fortran-style ordering as this intuitively simpler to implement than C-style in my opinion
 #[derive(Debug, Clone)]
 struct ScalarField {
     field: Vec<f64>, // [implied unit] contains all scalar field data of implied unit (e.g. A/m, V/m, etc.)
@@ -315,7 +315,7 @@ impl Engine {
             * (geometry.dx_inv.powi(2) + geometry.dy_inv.powi(2) + geometry.dz_inv.powi(2)).sqrt())
         .powi(-1);
 
-        // snap this time step to a specific number of loop iterations using target_time
+        // snap this time step to a specific number of loop iterations using target_time, this is guaranteed to be less than or equal to CFS
         let time_steps: usize = (config.end_time / dt).ceil() as usize;
 
         // recalculate the time step based on the snapped number of loop iterations
@@ -345,24 +345,34 @@ impl Engine {
         let abc4 = ((c_mur * dt).powi(2) * geometry.dz)
             / (2.0 * (geometry.dx).powi(2) * c_mur * dt + geometry.dz); // 4th Mur ABC update coefficient
 
-        // create clones of self.ey at n and n-1 for use in Mur ABC
+        // create clones of Ey and Hx at n and n-1 for use in Mur ABC
         let mut ey_n: ScalarField = self.ey.clone();
         let mut ey_n_1: ScalarField = ey_n.clone();
+        let mut hx_n: ScalarField = self.hx.clone();
+        let mut hx_n_1: ScalarField = hx_n.clone();
 
         // log basic time loop stats to stdout //TODO this could be removed
         println!("time steps: {}, dt: {}[s]", time_steps, dt);
-        println!("\nbeginning time loop");
+        println!("beginning time loop");
 
         // time loop
         for t in 0..time_steps {
             // update current engine time before magnetic field update
             self.cur_time += ONE_OVER_TWO * dt;
 
-            // update magnetic field
+            // update magnetic field inside dielectric region
             self.update_h(&geometry, &hax, &hay, &haz);
 
             // update TF/SF source by correcting the curl of Hx for an Ey driver source
             self.update_tfsf_source_hx(&config, &geometry, &hay);
+
+            // update Mur ABC for Hx
+            self.update_mur_abc_hx(geometry, &abc1, &abc2, &abc3, &abc4, &hx_n, &hx_n_1);
+
+            // update clones of Hx for Mur ABC
+            // TODO this can be improved by only keeping the desired array slice(s) instead of the entire field but this was convenient
+            hx_n_1 = hx_n.clone();
+            hx_n = self.hx.clone();
 
             // update current engine time before electric field update
             self.cur_time += ONE_OVER_TWO * dt;
@@ -373,8 +383,8 @@ impl Engine {
             // update TF/SF source by correcting the curl of Ey for Hx driver source
             self.update_tfsf_source_ey(config, geometry, &dt);
 
-            // update Mur ABC
-            self.update_mur_abc(&geometry, &abc1, &abc2, &abc3, &abc4, &ey_n, &ey_n_1);
+            // update Mur ABC for Ey
+            self.update_mur_abc_ey(&geometry, &abc1, &abc2, &abc3, &abc4, &ey_n, &ey_n_1);
 
             // update clones of Ey for Mur ABC
             // TODO this can be improved by only keeping the desired array slice(s) instead of the entire field but this was convenient
@@ -382,7 +392,7 @@ impl Engine {
             ey_n = self.ey.clone();
 
             // conditionally snapshot all field values
-            if t % snapshot_mod_steps == 0 {
+            if 0 == t % snapshot_mod_steps {
                 println!(
                     "took snapshot at t={}[s], step {}/{}",
                     self.cur_time, t, time_steps
@@ -471,7 +481,7 @@ impl Engine {
         Ok(())
     }
 
-    /// updates all magnetic field components using standard 3D Yee scheme
+    /// updates all magnetic field components in dielectric region using standard 3D Yee scheme
     ///
     /// # Arguments
     ///
@@ -498,7 +508,7 @@ impl Engine {
         self.update_hz(geometry, hax, hay);
     }
 
-    /// updates all Hx components using standard 3D Yee scheme
+    /// updates all Hx components in dielectric region using standard 3D Yee scheme
     ///
     /// # Arguments
     ///
@@ -514,7 +524,7 @@ impl Engine {
     /// - Will not error, will panic at out of bounds accesses in `ScalarField.idx()` or `ScalarField.idxm()` calls
     ///
     fn update_hx(&mut self, geometry: &Geometry, hay: &f64, haz: &f64) {
-        for k in 0..(geometry.num_vox_z - 1) {
+        for k in 1..(geometry.num_vox_z - 1) {
             for j in 0..(geometry.num_vox_y - 1) {
                 for i in 0..geometry.num_vox_x {
                     // hx update equation for non j-high, k-high volume
@@ -561,7 +571,7 @@ impl Engine {
         }
     }
 
-    /// updates all Hy components using standard 3D Yee scheme
+    /// updates all Hy components in dielectric region using standard 3D Yee scheme
     ///
     /// # Arguments
     ///
@@ -577,7 +587,7 @@ impl Engine {
     /// - Will not error, will panic at out of bounds accesses in `ScalarField.idx()` or `ScalarField.idxm()` calls
     ///
     fn update_hy(&mut self, geometry: &Geometry, hax: &f64, haz: &f64) {
-        for k in 0..(geometry.num_vox_z - 1) {
+        for k in 1..(geometry.num_vox_z - 1) {
             for j in 0..geometry.num_vox_y {
                 for i in 0..(geometry.num_vox_x - 1) {
                     // hy update for non i-high, k-high volume
@@ -622,7 +632,7 @@ impl Engine {
         }
     }
 
-    // updates all Hz components using standard 3D Yee scheme
+    /// updates all Hz components in dielectric region using standard 3D Yee scheme
     ///
     /// # Arguments
     ///
@@ -638,7 +648,7 @@ impl Engine {
     /// - Will not error, will panic at out of bounds accesses in `ScalarField.idx()` or `ScalarField.idxm()` calls
     ///
     fn update_hz(&mut self, geometry: &Geometry, hax: &f64, hay: &f64) {
-        for k in 0..geometry.num_vox_z {
+        for k in 1..geometry.num_vox_z {
             for j in 0..(geometry.num_vox_y - 1) {
                 for i in 0..(geometry.num_vox_x - 1) {
                     // hz update for non i-high, j-high volume
@@ -679,7 +689,7 @@ impl Engine {
         }
     }
 
-    /// updates all electric field components using standard 3D Yee scheme
+    /// updates all electric field components in dielectric region using standard 3D Yee scheme
     ///
     /// # Arguments
     ///
@@ -705,7 +715,7 @@ impl Engine {
         self.update_ez(geometry, &ea, &eb);
     }
 
-    // updates all Ex components using standard 3D Yee scheme
+    /// updates all Ex components in dielectric region using standard 3D Yee scheme
     ///
     /// # Arguments
     ///
@@ -734,7 +744,7 @@ impl Engine {
         }
     }
 
-    // updates all Ey components using standard 3D Yee scheme
+    /// updates all Ey components in dielectric region using standard 3D Yee scheme
     ///
     /// # Arguments
     ///
@@ -763,7 +773,7 @@ impl Engine {
         }
     }
 
-    // updates all Ez components using standard 3D Yee scheme
+    /// updates all Ez components in dielectric region using standard 3D Yee scheme
     ///
     /// # Arguments
     ///
@@ -792,7 +802,7 @@ impl Engine {
         }
     }
 
-    // injects an Ey source field into Hx using the TF/SF method with for waveguide source at z-high plane
+    /// injects an Ey source field into Hx using the TF/SF method with for waveguide source at z-high plane
     ///
     /// # Arguments
     ///
@@ -831,7 +841,7 @@ impl Engine {
     /// `&mut self` &mut Engine mutable reference to Engine struct
     /// `config` &Config reference to a Config struct
     /// `geometry` &Geometry reference to a Geometry struct
-    /// `hay` &f64 reference to Hy update coefficient
+    /// `dt` &f64 reference to time step
     ///
     /// # Returns
     ///
@@ -876,7 +886,7 @@ impl Engine {
             * (TAU * config.frequency * self.cur_time).sin()
     }
 
-    // updates Ey field points on z-low plane using Mur ABC scheme
+    /// updates Ey field points on z-low plane using Mur ABC scheme
     ///
     /// # Arguments
     ///
@@ -895,7 +905,7 @@ impl Engine {
     ///
     /// - Will not error, will panic at out of bounds accesses in `ScalarField.idx()` or `ScalarField.idxm()` calls
     ///
-    fn update_mur_abc(
+    fn update_mur_abc_ey(
         &mut self,
         geometry: &Geometry,
         abc1: &f64,
@@ -922,6 +932,56 @@ impl Engine {
                             + ey_n.idx(i + 1, j, 1)
                             - 2.0 * ey_n.idx(i, j, 1)
                             + ey_n.idx(i - 1, j, 1));
+            }
+        }
+    }
+
+    /// updates Hx field points on z-low plane using Mur ABC scheme
+    ///
+    /// # Arguments
+    ///
+    /// `&mut self` &mut Engine mutable reference to Engine structt
+    /// `geometry` &Geometry reference to a Geometry struct
+    /// `abc1` &f64 reference to 1st Mur ABC update coefficient
+    /// `abc2` &f64 reference to 2nd Mur ABC update coefficient
+    /// `abc3` &f64 reference to 3rd Mur ABC update coefficient
+    /// `abc4` &f64 reference to 4th Mur ABC update coefficient
+    /// `hx_n` &ScalarField reference to cloned Hx field at t=n
+    /// `hx_n_1` &ScalarField reference to cloned Hx field at t=n-1
+    ///
+    /// # Returns
+    ///
+    /// # Errors
+    ///
+    /// - Will not error, will panic at out of bounds accesses in `ScalarField.idx()` or `ScalarField.idxm()` calls
+    ///
+    fn update_mur_abc_hx(
+        &mut self,
+        geometry: &Geometry,
+        abc1: &f64,
+        abc2: &f64,
+        abc3: &f64,
+        abc4: &f64,
+        hx_n: &ScalarField,
+        hx_n_1: &ScalarField,
+    ) {
+        for j in 1..geometry.num_vox_y {
+            for i in 1..geometry.num_vox_x {
+                *self.hx.idxm(i, j, 0) = -hx_n_1.idx(i, j, 1)
+                    + abc1 * (self.hx.idx(i, j, 1) + hx_n_1.idx(i, j, 0))
+                    + abc2 * (hx_n.idx(i, j, 0) + hx_n.idx(i, j, 1))
+                    + abc3
+                        * (hx_n.idx(i, j + 1, 0) - 2.0 * hx_n.idx(i, j, 0)
+                            + hx_n.idx(i, j - 1, 0)
+                            + hx_n.idx(i, j + 1, 1)
+                            - 2.0 * hx_n.idx(i, j, 1)
+                            + hx_n.idx(i, j - 1, 0))
+                    + abc4
+                        * (hx_n.idx(i + 1, j, 0) - 2.0 * hx_n.idx(i, j, 0)
+                            + hx_n.idx(i - 1, j, 0)
+                            + hx_n.idx(i + 1, j, 1)
+                            - 2.0 * hx_n.idx(i, j, 1)
+                            + hx_n.idx(i - 1, j, 1));
             }
         }
     }
