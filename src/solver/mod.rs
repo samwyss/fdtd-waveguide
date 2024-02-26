@@ -26,11 +26,11 @@ impl Solver {
     ///
     /// # Arguments
     ///
-    /// `path_str` &str path to desired configuration file
+    /// - `path_str` &str path to desired configuration file
     ///
     /// # Returns
     ///
-    /// `Result<Solver>`
+    /// - `Result<Solver>`
     ///
     /// # Errors
     ///
@@ -57,7 +57,7 @@ impl Solver {
     ///
     /// # Returns
     ///
-    /// `Result<()>`
+    /// - `Result<()>`
     ///
     /// # Errors
     ///
@@ -101,11 +101,11 @@ impl Config {
     ///
     /// # Arguments
     ///
-    /// `path_str` &str path to desired configuration file
+    /// - `path_str` &str path to desired configuration file
     ///
     /// # Returns
     ///
-    /// `Result<Config>`
+    /// - `Result<Config>`
     ///
     /// # Errors
     ///

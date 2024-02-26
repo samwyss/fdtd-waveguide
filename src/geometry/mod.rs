@@ -40,11 +40,11 @@ impl Geometry {
     ///
     /// # Arguments
     ///
-    /// `config` solver::Config struct
+    /// - `config` solver::Config struct
     ///
     /// # Returns
     ///
-    /// `Result<Geometry>`
+    /// - `Result<Geometry>`
     ///
     /// # Errors
     ///

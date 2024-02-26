@@ -18,7 +18,7 @@ const TFSF_SRC_IDX: usize = 10;
 
 /// ScalarField struct
 ///
-/// Provides a no cost abstraction of a Vec<f64> to function as a 3D scalar field using Fortran-style ordering as this intuitively simpler to implement than C-style in my opinion
+/// Provides a no cost abstraction of a `Vec<f64>` to function as a 3D scalar field using Fortran-style ordering as this intuitively simpler to implement than C-style in my opinion
 #[derive(Debug, Clone)]
 struct ScalarField {
     field: Vec<f64>, // [implied unit] contains all scalar field data of implied unit (e.g. A/m, V/m, etc.)
@@ -38,7 +38,7 @@ impl ScalarField {
     ///
     /// # Returns
     ///
-    /// `Result<ScalarField>`
+    /// - `Result<ScalarField>`
     ///
     /// # Errors
     ///
@@ -56,9 +56,9 @@ impl ScalarField {
         })
     }
 
-    /// returns an aliased value at position [i,j,k] in ScalarField
+    /// returns an aliased value at position \[i,j,k\] in ScalarField
     ///
-    /// used to get an immutable value of a ScalarField at position [i,j,k]
+    /// used to get an immutable value of a ScalarField at position \[i,j,k\]
     ///
     /// # Arguments
     ///
@@ -68,18 +68,18 @@ impl ScalarField {
     ///
     /// # Returns
     ///
-    /// `f64`
+    /// - `f64` aliased value at position \[i,j,k\] in ScalarField
     ///
     /// # Errors
     ///
-    /// panics if [i,j,k] is out of bounds. this was not error handled properly to reduce the number of checks as this function is used very heavily
+    /// panics if \[i,j,k\] is out of bounds. this was not error handled properly to reduce the number of checks as this function is used very heavily
     pub fn idx(&self, i: usize, j: usize, k: usize) -> f64 {
         self.field[i + j * self.row_offset + k * self.row_offset * self.column_offset]
     }
 
-    /// returns a mutable reference to value at position [i,j,k] in ScalarField
+    /// returns a mutable reference to value at position \[i,j,k\] in ScalarField
     ///
-    /// used to get a mutable reference to a value of a ScalarField at position [i,j,k]
+    /// used to get a mutable reference to a value of a ScalarField at position \[i,j,k\]
     ///
     /// # Arguments
     ///
@@ -89,11 +89,11 @@ impl ScalarField {
     ///
     /// # Returns
     ///
-    /// `&mut f64`
+    /// - `&mut f64` mutable reference to value at position \[i,j,k\] in ScalarField
     ///
     /// # Errors
     ///
-    /// panics if [i,j,k] is out of bounds. this was not error handled properly to reduce the number of checks as this function is used very heavily
+    /// panics if \[i,j,k\] is out of bounds. this was not error handled properly to reduce the number of checks as this function is used very heavily
     pub fn idxm(&mut self, i: usize, j: usize, k: usize) -> &mut f64 {
         &mut self.field[i + j * self.row_offset + k * self.row_offset * self.column_offset]
     }
@@ -125,12 +125,12 @@ impl Engine {
     ///
     /// # Arguments
     ///
-    /// `config` solver::Config struct
-    /// `geometry` geometry::Geometry struct
+    /// - `config` solver::Config struct
+    /// - `geometry` geometry::Geometry struct
     ///
     /// # Returns
     ///
-    /// `Result<Engine>`
+    /// - `Result<Engine>`
     ///
     /// # Errors
     /// - any `ScalarField` constructors error
@@ -297,12 +297,12 @@ impl Engine {
     ///
     /// # Arguments
     ///
-    /// `config` solver::Config struct
-    /// `geometry` geometry::Geometry struct
+    /// - `config` solver::Config struct
+    /// - `geometry` geometry::Geometry struct
     ///
     /// # Returns
     ///
-    /// `Result<()>`
+    /// - `Result<()>`
     ///
     /// # Errors
     ///
@@ -412,11 +412,11 @@ impl Engine {
     ///
     /// # Arguments
     ///
-    /// `&mut self` mutable reference to Engine struct
+    /// - `&mut self` mutable reference to Engine struct
     ///
     /// # Returns
     ///
-    /// `Result<()>`
+    /// - `Result<()>`
     ///
     /// # Errors
     ///
@@ -437,11 +437,11 @@ impl Engine {
     ///
     /// # Arguments
     ///
-    /// `&mut self` mutable reference to Engine struct
+    /// - `&mut self` mutable reference to Engine struct
     ///
     /// # Returns
     ///
-    /// `Result<()>`
+    /// - `Result<()>`
     ///
     /// # Errors
     ///
@@ -462,12 +462,12 @@ impl Engine {
     ///
     /// # Arguments
     ///
-    /// `buffered_writer` &mut Writer<BufWriter<File>> mutable reference to a buffered writer
-    /// `data` &[f64] array slice to be written to disk
+    /// - `buffered_writer` &mut `Writer<BufWriter<File>>` mutable reference to a buffered writer
+    /// - `data` &[f64] array slice to be written to disk
     ///
     /// # Returns
     ///
-    /// `Result<()>`
+    /// - `Result<()>`
     ///
     /// # Errors
     ///
@@ -485,11 +485,11 @@ impl Engine {
     ///
     /// # Arguments
     ///
-    /// `&mut self` &mut Engine mutable reference to Engine struct
-    /// `geometry` &Geometry reference to a Geometry struct
-    /// `hax` &f64 reference to Hx update coefficient
-    /// `hay` &f64 reference to Hy update coefficient
-    /// `haz` &f64 reference to Hz update coefficient
+    /// - `&mut self` &mut Engine mutable reference to Engine struct
+    /// - `geometry` &Geometry reference to a Geometry struct
+    /// - `hax` &f64 reference to Hx update coefficient
+    /// - `hay` &f64 reference to Hy update coefficient
+    /// - `haz` &f64 reference to Hz update coefficient
     ///
     /// # Returns
     ///
@@ -512,10 +512,10 @@ impl Engine {
     ///
     /// # Arguments
     ///
-    /// `&mut self` &mut Engine mutable reference to Engine struct
-    /// `geometry` &Geometry reference to a Geometry struct
-    /// `hay` &f64 reference to Hy update coefficient
-    /// `haz` &f64 reference to Hz update coefficient
+    /// - `&mut self` &mut Engine mutable reference to Engine struct
+    /// - `geometry` &Geometry reference to a Geometry struct
+    /// - `hay` &f64 reference to Hy update coefficient
+    /// - `haz` &f64 reference to Hz update coefficient
     ///
     /// # Returns
     ///
@@ -575,10 +575,10 @@ impl Engine {
     ///
     /// # Arguments
     ///
-    /// `&mut self` &mut Engine mutable reference to Engine struct
-    /// `geometry` &Geometry reference to a Geometry struct
-    /// `hax` &f64 reference to Hx update coefficient
-    /// `haz` &f64 reference to Hz update coefficient
+    /// - `&mut self` &mut Engine mutable reference to Engine struct
+    /// - `geometry` &Geometry reference to a Geometry struct
+    /// - `hax` &f64 reference to Hx update coefficient
+    /// - `haz` &f64 reference to Hz update coefficient
     ///
     /// # Returns
     ///
@@ -636,10 +636,10 @@ impl Engine {
     ///
     /// # Arguments
     ///
-    /// `&mut self` &mut Engine mutable reference to Engine struct
-    /// `geometry` &Geometry reference to a Geometry struct
-    /// `hax` &f64 reference to Hx update coefficient
-    /// `hay` &f64 reference to Hy update coefficient
+    /// - `&mut self` &mut Engine mutable reference to Engine struct
+    /// - `geometry` &Geometry reference to a Geometry struct
+    /// - `hax` &f64 reference to Hx update coefficient
+    /// - `hay` &f64 reference to Hy update coefficient
     ///
     /// # Returns
     ///
@@ -693,10 +693,10 @@ impl Engine {
     ///
     /// # Arguments
     ///
-    /// `&mut self` &mut Engine mutable reference to Engine struct
-    /// `geometry` &Geometry reference to a Geometry struct
-    /// `ea` &f64 reference electric field 'alpha' update coefficient
-    /// `eb` &f64 reference electric field 'beta' update coefficient
+    /// - `&mut self` &mut Engine mutable reference to Engine struct
+    /// - `geometry` &Geometry reference to a Geometry struct
+    /// - `ea` &f64 reference electric field 'alpha' update coefficient
+    /// - `eb` &f64 reference electric field 'beta' update coefficient
     ///
     /// # Returns
     ///
@@ -719,10 +719,10 @@ impl Engine {
     ///
     /// # Arguments
     ///
-    /// `&mut self` &mut Engine mutable reference to Engine struct
-    /// `geometry` &Geometry reference to a Geometry struct
-    /// `ea` &f64 reference electric field 'alpha' update coefficient
-    /// `eb` &f64 reference electric field 'beta' update coefficient
+    /// - `&mut self` &mut Engine mutable reference to Engine struct
+    /// - `geometry` &Geometry reference to a Geometry struct
+    /// - `ea` &f64 reference electric field 'alpha' update coefficient
+    /// - `eb` &f64 reference electric field 'beta' update coefficient
     ///
     /// # Returns
     ///
@@ -748,10 +748,10 @@ impl Engine {
     ///
     /// # Arguments
     ///
-    /// `&mut self` &mut Engine mutable reference to Engine struct
-    /// `geometry` &Geometry reference to a Geometry struct
-    /// `ea` &f64 reference electric field 'alpha' update coefficient
-    /// `eb` &f64 reference electric field 'beta' update coefficient
+    /// - `&mut self` &mut Engine mutable reference to Engine struct
+    /// - `geometry` &Geometry reference to a Geometry struct
+    /// - `ea` &f64 reference electric field 'alpha' update coefficient
+    /// - `eb` &f64 reference electric field 'beta' update coefficient
     ///
     /// # Returns
     ///
@@ -777,10 +777,10 @@ impl Engine {
     ///
     /// # Arguments
     ///
-    /// `&mut self` &mut Engine mutable reference to Engine struct
-    /// `geometry` &Geometry reference to a Geometry struct
-    /// `ea` &f64 reference electric field 'alpha' update coefficient
-    /// `eb` &f64 reference electric field 'beta' update coefficient
+    /// - `&mut self` &mut Engine mutable reference to Engine struct
+    /// - `geometry` &Geometry reference to a Geometry struct
+    /// - `ea` &f64 reference electric field 'alpha' update coefficient
+    /// - `eb` &f64 reference electric field 'beta' update coefficient
     ///
     /// # Returns
     ///
@@ -806,10 +806,10 @@ impl Engine {
     ///
     /// # Arguments
     ///
-    /// `&mut self` &mut Engine mutable reference to Engine struct
-    /// `config` &Config reference to a Config struct
-    /// `geometry` &Geometry reference to a Geometry struct
-    /// `hay` &f64 reference to Hy update coefficient
+    /// - `&mut self` &mut Engine mutable reference to Engine struct
+    /// - `config` &Config reference to a Config struct
+    /// - `geometry` &Geometry reference to a Geometry struct
+    /// - `hay` &f64 reference to Hy update coefficient
     ///
     /// # Returns
     ///
@@ -838,10 +838,10 @@ impl Engine {
     ///
     /// # Arguments
     ///
-    /// `&mut self` &mut Engine mutable reference to Engine struct
-    /// `config` &Config reference to a Config struct
-    /// `geometry` &Geometry reference to a Geometry struct
-    /// `dt` &f64 reference to time step
+    /// - `&mut self` &mut Engine mutable reference to Engine struct
+    /// - `config` &Config reference to a Config struct
+    /// - `geometry` &Geometry reference to a Geometry struct
+    /// - `dt` &f64 reference to time step
     ///
     /// # Returns
     ///
@@ -874,8 +874,8 @@ impl Engine {
     ///
     /// # Arguments
     ///
-    /// `self` &Engine reference to Engine struct
-    /// `config` &Config reference to a Config struct
+    /// - `self` &Engine reference to Engine struct
+    /// - `config` &Config reference to a Config struct
     ///
     /// # Returns
     ///
@@ -890,14 +890,14 @@ impl Engine {
     ///
     /// # Arguments
     ///
-    /// `&mut self` &mut Engine mutable reference to Engine structt
-    /// `geometry` &Geometry reference to a Geometry struct
-    /// `abc1` &f64 reference to 1st Mur ABC update coefficient
-    /// `abc2` &f64 reference to 2nd Mur ABC update coefficient
-    /// `abc3` &f64 reference to 3rd Mur ABC update coefficient
-    /// `abc4` &f64 reference to 4th Mur ABC update coefficient
-    /// `ey_n` &ScalarField reference to cloned Ey field at t=n
-    /// `ey_n_1` &ScalarField reference to cloned Ey field at t=n-1
+    /// - `&mut self` &mut Engine mutable reference to Engine structt
+    /// - `geometry` &Geometry reference to a Geometry struct
+    /// - `abc1` &f64 reference to 1st Mur ABC update coefficient
+    /// - `abc2` &f64 reference to 2nd Mur ABC update coefficient
+    /// - `abc3` &f64 reference to 3rd Mur ABC update coefficient
+    /// - `abc4` &f64 reference to 4th Mur ABC update coefficient
+    /// - `ey_n` &ScalarField reference to cloned Ey field at t=n
+    /// - `ey_n_1` &ScalarField reference to cloned Ey field at t=n-1
     ///
     /// # Returns
     ///
@@ -940,14 +940,14 @@ impl Engine {
     ///
     /// # Arguments
     ///
-    /// `&mut self` &mut Engine mutable reference to Engine structt
-    /// `geometry` &Geometry reference to a Geometry struct
-    /// `abc1` &f64 reference to 1st Mur ABC update coefficient
-    /// `abc2` &f64 reference to 2nd Mur ABC update coefficient
-    /// `abc3` &f64 reference to 3rd Mur ABC update coefficient
-    /// `abc4` &f64 reference to 4th Mur ABC update coefficient
-    /// `hx_n` &ScalarField reference to cloned Hx field at t=n
-    /// `hx_n_1` &ScalarField reference to cloned Hx field at t=n-1
+    /// - `&mut self` &mut Engine mutable reference to Engine structt
+    /// - `geometry` &Geometry reference to a Geometry struct
+    /// - `abc1` &f64 reference to 1st Mur ABC update coefficient
+    /// - `abc2` &f64 reference to 2nd Mur ABC update coefficient
+    /// - `abc3` &f64 reference to 3rd Mur ABC update coefficient
+    /// - `abc4` &f64 reference to 4th Mur ABC update coefficient
+    /// - `hx_n` &ScalarField reference to cloned Hx field at t=n
+    /// - `hx_n_1` &ScalarField reference to cloned Hx field at t=n-1
     ///
     /// # Returns
     ///

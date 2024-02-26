@@ -12,7 +12,7 @@ use waveguide::solver::{Config, Solver};
 ///
 /// # Returns
 ///
-/// `Result<()>`
+/// - `Result<()>`
 ///
 /// # Errors
 /// - `config::new()` errors
