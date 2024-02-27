@@ -38,8 +38,8 @@ with $\epsilon$ and $\mu$ as the permittivity and permeability of the dielectric
 
 In this analysis, no fictitious magnetic conductors will be considered as they are not pertinent, thus $\textbf{M} = 0$. The free electric current density is treated as a linear superposition of Ohmic conduction $\textbf{J}_{Ohm}=\sigma\textbf{E}$ and and a source term $\textbf{J}_{src}$
 \begin{align}
-	\textbf{J} = \sigma\textbf{E}
-	\label{eq:ohm}
+	\textbf{J} = \sigma\textbf{E} + \textbf{J}_{src}
+	\label{eq:current}
 \end{align}
 where $\sigma$ is the diagonally-isotropic, time-invariant dielectric conductivity. In the described system, the inclusion of both a source current density and ohmic current density is not necessary as the wave is assumed to already be propagating in the waveguide from the TF/SF source, and Ohmic losses result in evanescent wave propagation along the waveguide's length. Despite this, these current density terms will be included in the governing set of equations for completeness. The full set of governing equations for waves propogating within the dielectric are as follows
 \begin{align}
@@ -113,7 +113,7 @@ To obtain a wide-band simulation response, a modulated Gaussian pulse is ideal a
 \end{align}
 
 \subsubsection{Mur Absorbing Boundary Condition}
-\label{subsub:murtheory}
+\label{subsubsec:murtheory}
 Mur's absorbing boundary condition is a discretized form of the 1-way Engquist-Majda 1-way wave equation \cite{taftlovefdtd}, \cite{rothlecnotes}. A three-dimensional, elliptic wave equation describing the evolution of an arbitrary scalar field $U$ is given by
 \begin{align}
 	\frac{\partial^2 U}{\partial x^2}+\frac{\partial^2 U}{\partial y^2}+\frac{\partial^2 U}{\partial z^2}-\frac{1}{c}\frac{\partial^2 U}{\partial t^2}=0
@@ -128,4 +128,52 @@ Via algebraic manipulation, and a second order accurate, Taylor series expansion
 \end{align}
 as in \cite{taftlovefdtd}.
 
-To absorb the incident wave introduced in \ref{subsubsec:ftsf-mod}, Eq. [\ref{eq:enmaabc}] 
+To absorb the incident wave introduced in \ref{subsubsec:ftsf-mod}, Eq. [\ref{eq:enmaabc}] is used to absorb both $E_y$ and $H_x$ fields along the $z=0$ which is similar to the TF/SF 1-way source outlined in \ref{subsubsec:ftsf-mod} however at the oposite end of the simulation domain.
+
+
+\subsection{Discretization}
+\label{subsec:discretization}
+To map the continuous equations above into data and structures that can be trivially represented using finite sequences of finitely precise numbers as found in all digital computer systems space and time need to be broken up into discrete steps.
+
+Despite the implementation benefits of abstractly defining spatial and temporal as rational multiples of the wavelength and / or Courant number \cite{ufdtd}, it is far more useful from an engineering perspective to define concrete spatial and temporal steps. In the case 3-dimensional waveguides, propagation is largely dependent on the exact sizes of a waveguide. Thus taking dynamic approach by first calculating a maximum spatial or temporal step needed to achieve a desired resolution, and then snapping that to a desired value. For an arbitrary maximum spatial / temporal step $\Delta s_{\max}$, a snapped $\Delta s$ can be obtained using the following procedure
+\begin{align}
+	\Delta s = \frac{s}{\lceil s / \Delta s_{\max}\rceil}
+	\label{eq:snapping}
+\end{align}
+where s is the `length' of a spatial / temporal step \cite{empossible}. This method ensures that any calculated $\Delta s$ is always less than or equal to that of of the precalculated maximum based on a set precision requirement. This method does come at the cost of adding additional temporal and points into the simulation domain which scales with $O(1)$ and $O(n^2)$ for a 3-dimensional simulation respectively.
+
+In the case of spatial steps, the precalculated maximum spatial step is the minimum of the step required to resolve the minimum wavelength $\Delta s_\lambda$ and the minimum feature size $\Delta s_f$ each to a specified resolution as
+\begin{align}
+	\Delta s_{\max} = \min{(\Delta s_\lambda, \Delta s_f)}.
+	\label{eq:maxspatial}
+\end{align}
+
+With the calculated values of $\Delta x, \Delta y$ and $\Delta z$ from Eqs. (\ref{eq:snapping})-(\ref{eq:maxspatial}) the maximal temporal discretization is based on the Courant–Friedrichs–Lewy stability condition \cite{jin2011theory}, which states
+\begin{align}
+	\Delta t_{\max} \leq \frac{1}{c\sqrt{\frac{1}{\Delta x^2}+\frac{1}{\Delta y^2}+\frac{1}{\Delta z^2}}}
+\end{align}
+where $c$ is the wave velocity.
+
+This calculated maximal temporal discretization is now able to be snapped to a concrete end time using Eq. (\ref{eq:snapping}) just as spatial steps were snapped to concrete distances.
+
+For convenience, the following shorthand notation for discrete functions is introduced
+\begin{align}
+	f(x,y,z,t)\rightarrow f(i\Delta x, j\Delta y, k\Delta z, n\Delta t)\rightarrow f^n(i,j,k)
+	\label{eq:discshorthand}
+\end{align}
+
+With space and time now discretized into steps, it is now possible to define spatial and temporal grids for the governing equations in Section \ref{subsec:model-formulation} to act on. As is the standard with finite difference methods in computational electromagnetics, the Yee Grid will be used to construct update equations \cite{taftlovefdtd}. The Yee grid describes a grid in which the electric and magnetic fields exist on the edges of spatially offset voxels at half integer time-steps\cite{yee}. This method resolved many of the erroneous solutions from previous finite-difference solutions as it constructs fields to be able to be integrated over a line\cite{rothlecnotes}. Electric fields will be defined on the primordial grid with integer spatial and temporal indices whereas the magnetic field will be defined on the secondary grid which are offset by half spatial and temporal steps.
+
+On this grid using the discrete shorthand outlined in Eq. (\ref{eq:discshorthand}) central spatial and temporal first-order derivatives can be expressed as
+\begin{align}
+	\frac{\partial f^n(i)}{\partial x} \approx \frac{f^n(i+1/2)- f^n(i-1/2)}{\Delta x}
+\end{align}
+and
+\begin{align}
+	\frac{\partial f^n(i)}{\partial t} \approx \frac{f^{n+1/2}(i)- f^{n-1/2}(i)}{\Delta t}
+\end{align}
+respectively. Similar discrete forms of higher order derivatives are obtained taking the discrete derivative of discrete derivatives.
+
+\subsection{Time Stepping Equations}
+\label{subsec:timestepeqs}
+mention leap frog updates
