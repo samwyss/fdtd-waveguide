@@ -88,7 +88,7 @@ To respect the Dirichlet boundary condition on PEC walls as defined in  Eqs. (\r
 \end{align}
 and
 \begin{align}
-	H_x = -\left(\eta\left[1-\left(\frac{\omega_c}{\omega}\right)^2\right]^{1/2}\right)^{-1}\left(E_0\sin{\frac{\pi x}{a}}\right)
+	H_x = -\left(\eta\left[1-\left(\frac{\omega_c}{\omega}\right)^2\right]^{-1/2}\right)^{-1}\left(E_0\sin{\frac{\pi x}{a}}\right)
 	\label{eq:hxfreq}
 \end{align}
 where $E_0$ is the initial complex valued waveguide intensity, $a$ is the width of the waveguide as in \ref{fig:model}, $\eta$ is the intrinsic impedance of the waveguide dielectric, $\omega_c$ is the cutoff angular frequency of the waveguide, and $\omega$ is the angular frequency of the source field \cite{fieldsandwavescomm}.
@@ -96,10 +96,12 @@ where $E_0$ is the initial complex valued waveguide intensity, $a$ is the width 
 Converting Eqs. (\ref{eq:eyfreq}-\ref{eq:hxfreq}) to the time-domain, the 1-way TF/SF source formulation becomes
 \begin{align}
 	E_y=E_{y,src}(t)\sin{\frac{\pi x}{a}} + E_{scat}
+	\label{eq:tfsf-ey}
 \end{align}
 and
 \begin{multline}
-	H_x = -E_{y_src}(t)\left(\eta\left[1-\left(\frac{\omega_c}{\omega}\right)^2\right]^{1/2}\right)^{-1}\left(\sin{\frac{\pi x}{a}}\right) \\ + H_{scat}
+	H_x = -E_{y,src}(t)\left(\eta\left[1-\left(\frac{\omega_c}{\omega}\right)^2\right]^{-1/2}\right)^{-1}\left(\sin{\frac{\pi x}{a}}\right) \\ + H_{scat}
+	\label{eq:tfsf-hx}
 \end{multline}
 in the total field region with $E_{scat}$ as the scattered electric field, $H_{scat}$ as the scattered magnetic field, and $E_{y,src}$ as a time-varying $E_y$ source field. The time-varying source field is specific to the desired simulation outcomes. To obtain a response at a nearly monochromatic frequency, a tapered sine wave may be used 
 \begin{align}
@@ -167,10 +169,12 @@ With space and time now discretized into steps, it is now possible to define spa
 On this grid using the discrete shorthand outlined in Eq. (\ref{eq:discshorthand}) central spatial and temporal first-order derivatives can be expressed as
 \begin{align}
 	\frac{\partial f^n(i)}{\partial x} \approx \frac{f^n(i+\frac{1}{2})- f^n(i-\frac{1}{2})}{\Delta x}
+	\label{eq:derivspace}
 \end{align}
 and
 \begin{align}
 	\frac{\partial f^n(i)}{\partial t} \approx \frac{f^{n+1/2}(i)- f^{n-1/2}(i)}{\Delta t}
+	\label{eq:derivtime}
 \end{align}
 respectively. Similar discrete forms of higher order derivatives are obtained taking the discrete derivative of discrete derivatives.
 
@@ -209,7 +213,6 @@ and
 	+\frac{\Delta t}{\mu(i+\tfrac{1}{2},j,k+\tfrac{1}{2})\Delta x}\bigg[E_z^n(i+1,j,k+\tfrac{1}{2})-E_z^n(i,j,k+\tfrac{1}{2})\bigg],
 	\label{eq:hy-update}
 \end{multline}
-
 where
 \begin{align}
 	a(i,j,k) = \bigg[\frac{\epsilon(i,j,k)}{\Delta t}+\frac{\sigma(i,j,k)}{2}\bigg]^{-1},
@@ -218,7 +221,7 @@ where
 and
 \begin{align}
 	b(i,j,k) = \bigg[\frac{\epsilon(i,j,k)}{\Delta t}-\frac{\sigma(i,j,k)}{2}\bigg].
-	\label{eq:a}
+	\label{eq:b}
 \end{align}
 
 Similarly, the remaining update equations for $E_x, E_z, H_x$ and $H_z$ are
@@ -231,6 +234,7 @@ Similarly, the remaining update equations for $E_x, E_z, H_x$ and $H_z$ are
 	 \bigg\},
 	\label{eq:ex-update}
 \end{multline}
+
 \begin{multline}
 	E_z^{n+1}(i,j,k+\tfrac{1}{2})\\ 
 	=a(i,j,k+\tfrac{1}{2}) \bigg\{b(i,j,k+\tfrac{1}{2})E_z^{n}(i,j,k+\tfrac{1}{2}) \\
@@ -240,6 +244,7 @@ Similarly, the remaining update equations for $E_x, E_z, H_x$ and $H_z$ are
 	 \bigg\},
 	\label{eq:ez-update}
 \end{multline}
+
 \begin{multline}
 	H_x^{n+1/2}(i,j+\tfrac{1}{2},k+\tfrac{1}{2}) = H_x^{n-1/2}(i,j+\tfrac{1}{2},k+\tfrac{1}{2}) \\ 
 	-\frac{\Delta t}{\mu(i,j+\tfrac{1}{2},k+\tfrac{1}{2})\Delta y}\bigg[E_z^n(i,j+1,k+\tfrac{1}{2})-E_z^n(i,j,k+\tfrac{1}{2})\bigg] \\
@@ -260,3 +265,46 @@ The same Dirichlet boundary condition can be enforced in Eqs. (\ref{eq:hy-update
 
 \subsubsection{TF/SF 1-way Source}
 \label{subsubsec:tfsf-timestep}
+Using the linear nature of Maxwell's Equations, $E_y$ and $H_x$ fields can be injected into the simulation by `correcting' the curl equations at an arbitrary source plane $k=k_{src}$ on the primordial grid. As shown in Fig. \ref{fig:model}, the TF/SF source exists near $k=k_{\max}$, thus we define $k\in[0,k_{src}]$ to be the total-field region and $k\in(k_{src},k_{\max})$ to be the scattered-field region. This distinction between regions allows for the study of reflected field profiles for fields below the cutoff frequency.
+
+Corrections for the inclusion of an $H_x$ source field in $E_y$ manifest as
+\begin{multline}
+	E_y^{n+1}(i,j+\tfrac{1}{2},k_{src}) = E_y^{n+1}(i,j+\tfrac{1}{2},k_{src}) \\ - \frac{\Delta t}{\epsilon(i,j+\tfrac{1}{2},k_{src})\Delta z}H_{x,src}(i,j+\tfrac{1}{2},k_{src}+\tfrac{1}{2}),
+\end{multline}
+and
+\begin{multline}
+	E_y^{n+1}(i,j+\tfrac{1}{2},k_{src}-1) = E_y^{n+1}(i,j+\tfrac{1}{2},k_{src}-1) \\ + \frac{\Delta t}{\epsilon(i,j+\tfrac{1}{2},k_{src})\Delta z}H_{x,src}(i,j+\tfrac{1}{2},k_{src}-1+\tfrac{1}{2}).
+\end{multline}
+
+Similarly, corrections for the inclusion of an $E_y$ source field in $H_z$ is expressed as
+\begin{multline}
+	H_x^{n+1/2}(i,j+\tfrac{1}{2},k_{src}+\tfrac{1}{2}) = H_x^{n+1/2}(i,j+\tfrac{1}{2},k_{src}+\tfrac{1}{2}) \\
+	+\frac{\Delta t}{\mu(i,j+\tfrac{1}{2},k_{src}+\tfrac{1}{2})\Delta z}E_{y,src}^n(i,j,k_{src}),
+\end{multline}
+and
+\begin{multline}
+	H_x^{n+1/2}(i,j+\tfrac{1}{2},k_{src}-\tfrac{1}{2}) = H_x^{n+1/2}(i,j+\tfrac{1}{2},k_{src}-\tfrac{1}{2}) \\
+	-\frac{\Delta t}{\mu(i,j+\tfrac{1}{2},k_{src}-\tfrac{1}{2})\Delta z}E_{y,src}^n(i,j,k_{src}).
+\end{multline}
+
+When combined with source fields defined in Eqs. (\ref{eq:tfsf-ey})-(\ref{eq:tfsf-hx}) these equations allow energy to be injected into the system in the form of a 1-way source wave propagating in an infinite rectangular waveguide\cite{taftlovefdtd}.
+
+\subsubsection{Mur Absorbing Boundary Condition}
+\label{subsubsec:mur-timestep}
+In order to reformulate the Engquist-Majda ABC of Eq. (\ref{eq:enmaabc}) into Mur's absorbing boundary condition, the split derivative term must be approximated as
+\begin{multline}
+	\frac{\partial^2 U^n(i,j,\tfrac{1}{2})}{\partial z\partial t} \\ \approx\frac{1}{2\Delta t}\bigg[\frac{U^{n+1}(i,j,1)-U^{n+1}(i,j,0)}{\Delta x} \\ -\frac{U^{n-1}(i,j,1)-U^{n-1}(i,j,0)}{\Delta x}\bigg]
+\end{multline}
+as in \cite{taftlovefdtd}.
+
+The remaining derivatives are able to be approximated by Eqs. (\ref{eq:derivspace})-(\ref{eq:derivtime}). With these derivitave approximations, the most time advanced field component is updated with
+\begin{multline}
+	U^{n+1}(i,j,0) = -U^{n-1}(i,j,1) \\
+	+\frac{c\Delta t - \Delta x}{c\Delta t + \Delta x}\bigg[U^{n+1}(i,j,1)-U^{n-1}(i,j,0)\bigg] \\ 
+	+\frac{2\Delta z}{c\Delta t+\Delta z}\bigg[U^n(i,j,0)+U^n(i,j,1)\bigg] \\
+	+\frac{(c\Delta t)^2\Delta z}{2\Delta x^2(c\Delta t+\Delta z)}\bigg[U^n(i+1,j,0)-2U^n(i,j,0) \\ 
+	+U^n(i-1,j,0) + U^n(i+1,j,1) \\ -2U^n(i,j,1)+U^n(i-1,j,1)\bigg] \\ 
+	+\frac{(c\Delta t)^2\Delta z}{2\Delta y^2(c\Delta t+\Delta z)}\bigg[U^n(i,j+1,0)-2U^n(i,j,0) \\ 
+	+U^n(i,j-1,0) + U^n(i,j+1,1) \\ -2U^n(i,j,1)+U^n(i,j-1,1)\bigg]
+\end{multline}
+which is the 3D variant of Mur's absorbing boundary condition for $k=0$ \cite{taftlovefdtd}.

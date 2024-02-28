@@ -2,7 +2,7 @@ from matplotlib import streamplot
 import matplotlib.pyplot as plt
 import numpy as np
 
-time = 390
+time = 150
 x_size = 23
 y_size = 11
 z_size = 101
@@ -36,7 +36,7 @@ X, Z = np.meshgrid(z, x)
 
 
 plt.quiver(
-    X, Z, hz_slice, hx_slice, scale=0.02, pivot="tip", angles="uv"
+    X, Z, hz_slice, hx_slice, scale=0.04, pivot="tip", angles="uv"
 )  # Adjust the scale as needed
 ax.imshow(ey_slice, cmap="coolwarm", vmax=high, vmin=low, extent=[0, z_len, 0, a])
 # ax.streamplot(X, Z, hz_slice, hx_slice, density=1, color='k')
