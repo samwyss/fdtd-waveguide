@@ -51,7 +51,7 @@ where $\sigma$ is the diagonally-isotropic, time-invariant dielectric conductivi
     \label{eq:faraday-final}
 \end{align}
 
-Each of these 3D vector equations can be broken down into $\hat{x}$, $\hat{y}$, and $\hat{z}$ component equations; the $\hat{y}$ components of \textbf{E} and \textbf{H} in Eqs. (\ref{eq:ampere-final})-(\ref{eq:faraday-final}) are
+Each of these 3D vector equations can be broken down into $\hat{x}$, $\hat{y}$, and $\hat{z}$ component equations; the $\hat{y}$ components of \textbf{E} and \textbf{H} in  (\ref{eq:ampere-final})-(\ref{eq:faraday-final}) are
 \begin{align}
 	\frac{\partial H_x}{\partial z} - \frac{\partial H_z}{\partial x} = \epsilon\frac{\partial E_y}{\partial t} + \sigma E_y + J_{y,src}
 	\label{ampere-full-ey}
@@ -73,7 +73,7 @@ This Dirichlet boundary condition originates from the conservation of tangential
 	\hat{n}\times\textbf{E}_1=\hat{n}\times\textbf{E}_2.
 	\label{eq:electricbc}
 \end{align}
-By nature of their infinite conductivity, electric fields cannot exist within in the PEC walls thus Eq. (\ref{eq:electricbc}) gives rise to Eq. (\ref{eq:dirichlet}).
+By nature of their infinite conductivity, electric fields cannot exist within in the PEC walls thus  (\ref{eq:electricbc}) gives rise to  (\ref{eq:dirichlet}).
 
 \subsubsection{TF/SF 1-way Source}
 \label{subsubsec:ftsf-mod}
@@ -81,7 +81,7 @@ One of the most popular formulations for injecting source fields into a simulati
 
 As shown in Fig. \ref{fig:model}, The TF/SF source is introduced in a plane with a normal vector $\hat{n}=-\hat{z}$. As outlined in \cite{taftlovefdtd}, fields may be introduced on such planes by fully specifying $E_x, E_y, H_x$ and $H_y$. For this analysis, the waveguide source fields will be restricted to $E_y, H_x$ and $H_z$ as in \cite{fieldsandwavescomm}. Thus for source fields originating on a $\hat{z}$ plane, only the former two fields need to be specified. 
 
-To respect the Dirichlet boundary condition on PEC walls as defined in  Eqs. (\ref{eq:dirichlet}-\ref{eq:electricbc}), the spatial distribution of the steady state frequency solution must be satisfied as to ensure all numerical results are physical. These time independent solutions are as follows
+To respect the Dirichlet boundary condition on PEC walls as defined in   (\ref{eq:dirichlet}-\ref{eq:electricbc}), the spatial distribution of the steady state frequency solution must be satisfied as to ensure all numerical results are physical. These time independent solutions are as follows
 \begin{align}
 	E_y=E_0\sin{\frac{\pi x}{a}}
 	\label{eq:eyfreq}
@@ -93,7 +93,7 @@ and
 \end{align}
 where $E_0$ is the initial complex valued waveguide intensity, $a$ is the width of the waveguide as in \ref{fig:model}, $\eta$ is the intrinsic impedance of the waveguide dielectric, $\omega_c$ is the cutoff angular frequency of the waveguide, and $\omega$ is the angular frequency of the source field \cite{fieldsandwavescomm}.
 
-Converting Eqs. (\ref{eq:eyfreq}-\ref{eq:hxfreq}) to the time-domain, the 1-way TF/SF source formulation becomes
+Converting  (\ref{eq:eyfreq}-\ref{eq:hxfreq}) to the time-domain, the 1-way TF/SF source formulation becomes
 \begin{align}
 	E_y=E_{y,src}(t)\sin{\frac{\pi x}{a}} + E_{scat}
 	\label{eq:tfsf-ey}
@@ -123,14 +123,14 @@ Mur's absorbing boundary condition is a discretized form of the 1-way Engquist-M
 \end{align}
 as defined in \cite{taftlovefdtd}.
 
-Via algebraic manipulation, and a second order accurate, Taylor series expansion of the general expression $\sqrt{1-s^2}\approx1-s^2/2$, the following continuous Engquist-Majda absorbing boundary condition at the $z=0$ plane can be derived from Eq. [\ref{eq:scalarelliptic}] as
+Via algebraic manipulation, and a second order accurate, Taylor series expansion of the general expression $\sqrt{1-s^2}\approx1-s^2/2$, the following continuous Engquist-Majda absorbing boundary condition at the $z=0$ plane can be derived from  [\ref{eq:scalarelliptic}] as
 \begin{align}
 	\frac{\partial^2 U}{\partial z\partial t}-\frac{1}{c}\frac{\partial^2 U}{\partial t^2}+\frac{c}{2}\frac{\partial^2 U}{\partial x^2}+\frac{c}{2}\frac{\partial^2 U}{\partial y^2}=0
 	\label{eq:enmaabc}
 \end{align}
 as in \cite{taftlovefdtd}.
 
-To absorb the incident wave introduced in \ref{subsubsec:ftsf-mod}, Eq. [\ref{eq:enmaabc}] is used to absorb both $E_y$ and $H_x$ fields along the $z=0$ which is similar to the TF/SF 1-way source outlined in \ref{subsubsec:ftsf-mod} however at the oposite end of the simulation domain.
+To absorb the incident wave introduced in \ref{subsubsec:ftsf-mod},  [\ref{eq:enmaabc}] is used to absorb both $E_y$ and $H_x$ fields along the $z=0$ which is similar to the TF/SF 1-way source outlined in \ref{subsubsec:ftsf-mod} however at the oposite end of the simulation domain.
 
 
 \subsection{Discretization}
@@ -150,13 +150,13 @@ In the case of spatial steps, the precalculated maximum spatial step is the mini
 	\label{eq:maxspatial}
 \end{align}
 
-With the calculated values of $\Delta x, \Delta y$ and $\Delta z$ from Eqs. (\ref{eq:snapping})-(\ref{eq:maxspatial}) the maximal temporal discretization is based on the Courant–Friedrichs–Lewy stability condition \cite{jin2011theory}, which states
+With the calculated values of $\Delta x, \Delta y$ and $\Delta z$ from  (\ref{eq:snapping})-(\ref{eq:maxspatial}) the maximal temporal discretization is based on the Courant–Friedrichs–Lewy stability condition \cite{jin2011theory}, which states
 \begin{align}
 	\Delta t_{\max} \leq \frac{1}{c\sqrt{\frac{1}{\Delta x^2}+\frac{1}{\Delta y^2}+\frac{1}{\Delta z^2}}}
 \end{align}
 where $c$ is the wave velocity.
 
-This calculated maximal temporal discretization is now able to be snapped to a concrete end time using Eq. (\ref{eq:snapping}) just as spatial steps were snapped to concrete distances.
+This calculated maximal temporal discretization is now able to be snapped to a concrete end time using  (\ref{eq:snapping}) just as spatial steps were snapped to concrete distances.
 
 For convenience, the following shorthand notation for discrete functions is introduced
 \begin{align}
@@ -166,7 +166,7 @@ For convenience, the following shorthand notation for discrete functions is intr
 
 With space and time now discretized into steps, it is now possible to define spatial and temporal grids for the governing equations in Section \ref{subsec:model-formulation} to act on. As is the standard with finite difference methods in computational electromagnetics, the Yee Grid will be used to construct update equations \cite{taftlovefdtd}. The Yee grid describes a grid in which the electric and magnetic fields exist on the edges of spatially offset voxels at half integer time-steps\cite{yee}. This method resolved many of the erroneous solutions from previous finite-difference solutions as it constructs fields to be able to be integrated over a line\cite{rothlecnotes}. Electric fields will be defined on the primordial grid with integer spatial and temporal indices whereas the magnetic field will be defined on the secondary grid which are offset by half spatial and temporal steps.
 
-On this grid using the discrete shorthand outlined in Eq. (\ref{eq:discshorthand}) central spatial and temporal first-order derivatives can be expressed as
+On this grid using the discrete shorthand outlined in  (\ref{eq:discshorthand}) central spatial and temporal first-order derivatives can be expressed as
 \begin{align}
 	\frac{\partial f^n(i)}{\partial x} \approx \frac{f^n(i+\frac{1}{2})- f^n(i-\frac{1}{2})}{\Delta x}
 	\label{eq:derivspace}
@@ -185,7 +185,7 @@ Time stepping update equations are now obtained by substituting discrete derivat
 
 \subsubsection{PEC Surrounded Dielectric}
 \label{subsubsec:pec-time}
-Starting with the dielectric bordered PEC region, Eqs. (\ref{ampere-full-ey})-(\ref{faraday-full-hy}) can now be written as
+Starting with the dielectric bordered PEC region, (\ref{ampere-full-ey})-(\ref{faraday-full-hy}) can now be written as
 \begin{multline}
 	\frac{H_x^{n+1/2}(i,j+\frac{1}{2},k+\frac{1}{2}) - H_x^{n+1/2}(i,j+\frac{1}{2},k-\frac{1}{2})}{\Delta z} \\ - \frac{H_z^{n+1/2}(i+\frac{1}{2},j+\frac{1}{2},k) - H_z^{n+1/2}(i-\frac{1}{2},j+\frac{1}{2},k)}{\Delta x} \\ = \epsilon(i,j+\tfrac{1}{2},k)\frac{E_y^{n+1}(i,j+\frac{1}{2},k) - E_y^{n}(i,j+\frac{1}{2},k)}{\Delta t} \\ + \frac{\sigma(i,j+\tfrac{1}{2},k)}{2}(E_y^{n+1}(i,j+\tfrac{1}{2},k),+E_y^{n}(i,j+\tfrac{1}{2},k)) \\ + J_{y,src}(i,j+\tfrac{1}{2},k)
 	\label{eq:discrete-faraday}
@@ -234,7 +234,6 @@ Similarly, the remaining update equations for $E_x, E_z, H_x$ and $H_z$ are
 	 \bigg\},
 	\label{eq:ex-update}
 \end{multline}
-
 \begin{multline}
 	E_z^{n+1}(i,j,k+\tfrac{1}{2})\\ 
 	=a(i,j,k+\tfrac{1}{2}) \bigg\{b(i,j,k+\tfrac{1}{2})E_z^{n}(i,j,k+\tfrac{1}{2}) \\
@@ -244,7 +243,6 @@ Similarly, the remaining update equations for $E_x, E_z, H_x$ and $H_z$ are
 	 \bigg\},
 	\label{eq:ez-update}
 \end{multline}
-
 \begin{multline}
 	H_x^{n+1/2}(i,j+\tfrac{1}{2},k+\tfrac{1}{2}) = H_x^{n-1/2}(i,j+\tfrac{1}{2},k+\tfrac{1}{2}) \\ 
 	-\frac{\Delta t}{\mu(i,j+\tfrac{1}{2},k+\tfrac{1}{2})\Delta y}\bigg[E_z^n(i,j+1,k+\tfrac{1}{2})-E_z^n(i,j,k+\tfrac{1}{2})\bigg] \\
@@ -259,9 +257,9 @@ and
 	\label{eq:hz-update}
 \end{multline}
 
-The Dirichlet PEC boundary condition found in Eq. (\ref{eq:dirichlet}) are built into Eqs. (\ref{eq:ey-update}) and (\ref{eq:ex-update}) via defining $E_x$ and $E_y$ on the $j=0$ and $i=0$ planes respectively inside of the PEC region. Thus after these fields are initialized to zero, they are never updated. No PEC conditions are required for Eq. \ref{eq:ez-update} as the $k=0$ plane is defined to be inside the Mur ABC region.
+The Dirichlet PEC boundary condition found in  (\ref{eq:dirichlet}) are built into  (\ref{eq:ey-update}) and (\ref{eq:ex-update}) via defining $E_x$ and $E_y$ on the $j=0$ and $i=0$ planes respectively inside of the PEC region. Thus after these fields are initialized to zero, they are never updated. No PEC conditions are required for  \ref{eq:ez-update} as the $k=0$ plane is defined to be inside the Mur ABC region.
 
-The same Dirichlet boundary condition can be enforced in Eqs. (\ref{eq:hy-update}) and (\ref{eq:hx-update})-(\ref{eq:hz-update}) by setting any electric fields outside the boundary region to zero on the $j=j_{\max}$, $i=i_{\max}$ and $k=k_{\max}$ planes respectively. The PEC boundary condition is enforced at $k=k_{\max}$ despite this plane existing within the scattered-field region. This is done for convenience as the only fields that should reflect off of it are fields corresponding to leaks from the TF/SF source and waves with frequencies below the cutoff frequency of the $TE_{10}$ mode $f_c$.
+The same Dirichlet boundary condition can be enforced in  (\ref{eq:hy-update}) and (\ref{eq:hx-update})-(\ref{eq:hz-update}) by setting any electric fields outside the boundary region to zero on the $j=j_{\max}$, $i=i_{\max}$ and $k=k_{\max}$ planes respectively. The PEC boundary condition is enforced at $k=k_{\max}$ despite this plane existing within the scattered-field region. This is done for convenience as the only fields that should reflect off of it are fields corresponding to leaks from the TF/SF source and waves with frequencies below the cutoff frequency of the $TE_{10}$ mode $f_c$.
 
 \subsubsection{TF/SF 1-way Source}
 \label{subsubsec:tfsf-timestep}
@@ -287,20 +285,20 @@ and
 	-\frac{\Delta t}{\mu(i,j+\tfrac{1}{2},k_{src}-\tfrac{1}{2})\Delta z}E_{y,src}^n(i,j,k_{src}).
 \end{multline}
 
-When combined with source fields defined in Eqs. (\ref{eq:tfsf-ey})-(\ref{eq:tfsf-hx}) these equations allow energy to be injected into the system in the form of a 1-way source wave propagating in an infinite rectangular waveguide\cite{taftlovefdtd}.
+When combined with source fields defined in  (\ref{eq:tfsf-ey})-(\ref{eq:tfsf-hx}) these equations allow energy to be injected into the system in the form of a 1-way source wave propagating in an infinite rectangular waveguide\cite{taftlovefdtd}.
 
 \subsubsection{Mur Absorbing Boundary Condition}
 \label{subsubsec:mur-timestep}
-In order to reformulate the Engquist-Majda ABC of Eq. (\ref{eq:enmaabc}) into Mur's absorbing boundary condition, the split derivative term must be approximated as
+In order to reformulate the Engquist-Majda ABC of  (\ref{eq:enmaabc}) into Mur's absorbing boundary condition, the split derivative term must be approximated as
 \begin{multline}
 	\frac{\partial^2 U^n(i,j,\tfrac{1}{2})}{\partial z\partial t} \\ \approx\frac{1}{2\Delta t}\bigg[\frac{U^{n+1}(i,j,1)-U^{n+1}(i,j,0)}{\Delta x} \\ -\frac{U^{n-1}(i,j,1)-U^{n-1}(i,j,0)}{\Delta x}\bigg]
 \end{multline}
 as in \cite{taftlovefdtd}.
 
-The remaining derivatives are able to be approximated by Eqs. (\ref{eq:derivspace})-(\ref{eq:derivtime}). With these derivitave approximations, the most time advanced field component is updated with
+The remaining derivatives are able to be approximated by  (\ref{eq:derivspace})-(\ref{eq:derivtime}). With these derivitave approximations, the most time advanced field component is updated with
 \begin{multline}
 	U^{n+1}(i,j,0) = -U^{n-1}(i,j,1) \\
-	+\frac{c\Delta t - \Delta x}{c\Delta t + \Delta x}\bigg[U^{n+1}(i,j,1)-U^{n-1}(i,j,0)\bigg] \\ 
+	+\frac{c\Delta t - \Delta z}{c\Delta t + \Delta z}\bigg[U^{n+1}(i,j,1)-U^{n-1}(i,j,0)\bigg] \\ 
 	+\frac{2\Delta z}{c\Delta t+\Delta z}\bigg[U^n(i,j,0)+U^n(i,j,1)\bigg] \\
 	+\frac{(c\Delta t)^2\Delta z}{2\Delta x^2(c\Delta t+\Delta z)}\bigg[U^n(i+1,j,0)-2U^n(i,j,0) \\ 
 	+U^n(i-1,j,0) + U^n(i+1,j,1) \\ -2U^n(i,j,1)+U^n(i-1,j,1)\bigg] \\ 

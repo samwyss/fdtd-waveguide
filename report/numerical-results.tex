@@ -1,16 +1,10 @@
 \section{Numerical Results}
 \label{sec:numres} 
+All update equations as defined in Section \ref{subsec:timestepeqs} were implemented in Rust. This language was choosen for its C++ like performance while enforcing compile-time memory safety which makes writing fast and safe CEM codes relatively easy. An overview of this implementation can be found in \ref{subsec:code}.
+
+All simulations will be of a $0.1$ meter stretch of a WR-90, X-band waveguide with a cross section of $a=0.02286$ and $b=0.01016$ \cite{everythingrf} unless otherwise noted.
 
 \subsection{Verification and Validation}
 \label{subsec:vv}
 
-\subsubsection{Propogation Patterns}
-\label{subsubsec:prop_pat}
-
-\subsubsection{Cutoff Frequency}
-\label{subsubsec:cut_freq}
-
-\subsubsection{Dielectric Frequency Compression}
-\label{subsubsec:cut_freq}
-
-\subsection{Case Study}
+\subsection{Transmission in Imperfect Dielectrics}
