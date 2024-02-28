@@ -166,7 +166,7 @@ With space and time now discretized into steps, it is now possible to define spa
 
 On this grid using the discrete shorthand outlined in Eq. (\ref{eq:discshorthand}) central spatial and temporal first-order derivatives can be expressed as
 \begin{align}
-	\frac{\partial f^n(i)}{\partial x} \approx \frac{f^n(i+1/2)- f^n(i-1/2)}{\Delta x}
+	\frac{\partial f^n(i)}{\partial x} \approx \frac{f^n(i+\frac{1}{2})- f^n(i-\frac{1}{2})}{\Delta x}
 \end{align}
 and
 \begin{align}
@@ -174,6 +174,24 @@ and
 \end{align}
 respectively. Similar discrete forms of higher order derivatives are obtained taking the discrete derivative of discrete derivatives.
 
+
 \subsection{Time Stepping Equations}
 \label{subsec:timestepeqs}
-mention leap frog updates
+Time stepping update equations are now obtained by substituting discrete derivatives into the governing equations in Section \ref{subsec:model-formulation} evaluated on the Yee grid. All magnetic field quantities are first evaluated at half integer time-steps which are then used to update electric fields at integer time-steps in a leap-frog fashion. If a field value is needed at a time or spatial index that does not exist, a spatial or temporal average is used.
+
+Starting with the dielectric bordered PEC region, Eqs. (\ref{ampere-full-ey})-(\ref{faraday-full-hy}) can now be written as
+\begin{multline}
+	\frac{H_x^{n+1/2}(i,j+\frac{1}{2},k+\frac{1}{2}) - H_x^{n+1/2}(i,j+\frac{1}{2},k-\frac{1}{2})}{\Delta z} \\  - \frac{H_x^{n+1/2}(i+\frac{1}{2},j+\frac{1}{2},k) - H_x^{n+1/2}(i-\frac{1}{2},j+\frac{1}{2},k)}{\Delta x} \\  = \epsilon\frac{E_y^{n+1}(i,j+\frac{1}{2},k) - E_y^{n}(i,j+\frac{1}{2},k)}{\Delta t} \\ + \frac{\sigma(i,j,k)}{2}(E_y^{n+1}(i,j+\tfrac{1}{2},k),+E_y^{n}(i,j+\tfrac{1}{2},k)) + \\ J_{y,src}(i,j+\frac{1}{2},k)
+	\label{eq:discrete-faraday}
+\end{multline}
+and
+\begin{align}
+	\frac{\partial E_x}{\partial z} - \frac{\partial E_z}{\partial x} =-\mu\frac{\partial H_y}{\partial t}
+	\label{eq:discrete-ampere}
+\end{align}
+
+These can be trivially manipulated to solve for a time updated $E_y$ and $H_y$ as
+
+where
+
+Similarly, the remaining update equations for $E_x, E_z, H_x$ and $H_z$ are
