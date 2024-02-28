@@ -179,19 +179,84 @@ respectively. Similar discrete forms of higher order derivatives are obtained ta
 \label{subsec:timestepeqs}
 Time stepping update equations are now obtained by substituting discrete derivatives into the governing equations in Section \ref{subsec:model-formulation} evaluated on the Yee grid. All magnetic field quantities are first evaluated at half integer time-steps which are then used to update electric fields at integer time-steps in a leap-frog fashion. If a field value is needed at a time or spatial index that does not exist, a spatial or temporal average is used.
 
+\subsubsection{PEC Surrounded Dielectric}
+\label{subsubsec:pec-time}
 Starting with the dielectric bordered PEC region, Eqs. (\ref{ampere-full-ey})-(\ref{faraday-full-hy}) can now be written as
 \begin{multline}
-	\frac{H_x^{n+1/2}(i,j+\frac{1}{2},k+\frac{1}{2}) - H_x^{n+1/2}(i,j+\frac{1}{2},k-\frac{1}{2})}{\Delta z} \\  - \frac{H_x^{n+1/2}(i+\frac{1}{2},j+\frac{1}{2},k) - H_x^{n+1/2}(i-\frac{1}{2},j+\frac{1}{2},k)}{\Delta x} \\  = \epsilon\frac{E_y^{n+1}(i,j+\frac{1}{2},k) - E_y^{n}(i,j+\frac{1}{2},k)}{\Delta t} \\ + \frac{\sigma(i,j,k)}{2}(E_y^{n+1}(i,j+\tfrac{1}{2},k),+E_y^{n}(i,j+\tfrac{1}{2},k)) + \\ J_{y,src}(i,j+\frac{1}{2},k)
+	\frac{H_x^{n+1/2}(i,j+\frac{1}{2},k+\frac{1}{2}) - H_x^{n+1/2}(i,j+\frac{1}{2},k-\frac{1}{2})}{\Delta z} \\ - \frac{H_z^{n+1/2}(i+\frac{1}{2},j+\frac{1}{2},k) - H_z^{n+1/2}(i-\frac{1}{2},j+\frac{1}{2},k)}{\Delta x} \\ = \epsilon(i,j+\tfrac{1}{2},k)\frac{E_y^{n+1}(i,j+\frac{1}{2},k) - E_y^{n}(i,j+\frac{1}{2},k)}{\Delta t} \\ + \frac{\sigma(i,j+\tfrac{1}{2},k)}{2}(E_y^{n+1}(i,j+\tfrac{1}{2},k),+E_y^{n}(i,j+\tfrac{1}{2},k)) \\ + J_{y,src}(i,j+\tfrac{1}{2},k)
 	\label{eq:discrete-faraday}
 \end{multline}
 and
-\begin{align}
-	\frac{\partial E_x}{\partial z} - \frac{\partial E_z}{\partial x} =-\mu\frac{\partial H_y}{\partial t}
+\begin{multline}
+	\frac{E_x^n(i+\tfrac{1}{2},j,k+1)-E_x^n(i+\tfrac{1}{2},j,k)}{\Delta z} \\ - \frac{E_z^n(i+1,j,k+\tfrac{1}{2}) - E_z^n(i,j,k+\tfrac{1}{2})}{\Delta x} \\ =-\mu(i+\tfrac{1}{2},j,k+\tfrac{1}{2}) \\ \frac{H_y^{n+1/2}(i+\tfrac{1}{2},j,k+\tfrac{1}{2})-H_y^{n-1/2}(i+\tfrac{1}{2},j,k+\tfrac{1}{2})}{\Delta t}
 	\label{eq:discrete-ampere}
-\end{align}
+\end{multline}
 
 These can be trivially manipulated to solve for a time updated $E_y$ and $H_y$ as
+\begin{multline}
+	E_y^{n+1}(i,j+\tfrac{1}{2},k)\\ 
+	=a(i,j+\tfrac{1}{2},k) \bigg\{b(i,j+\tfrac{1}{2},k)E_y^{n}(i,j+\tfrac{1}{2},k) \\
+	 +\frac{1}{\Delta z}\bigg[H_x^{n+1/2}(i,j+\tfrac{1}{2},k+\tfrac{1}{2})-H_x^{n+1/2}(i,j+\tfrac{1}{2},k-\tfrac{1}{2}) \bigg] \\
+	 -\frac{1}{\Delta x} \bigg[H_z^{n+1/2}(i+\tfrac{1}{2},j+\tfrac{1}{2},k)-H_z^{n+1/2}(i-\tfrac{1}{2},j+\tfrac{1}{2},k)\bigg] \\
+	 -J_{y,src}(i,j+\tfrac{1}{2},k)
+	 \bigg\},
+	\label{eq:ey-update}
+\end{multline}
+and
+\begin{multline}
+	H_y^{n+1/2}(i+\tfrac{1}{2},j,k+\tfrac{1}{2}) = H_y^{n-1/2}(i+\tfrac{1}{2},j,k+\tfrac{1}{2}) \\ 
+	-\frac{\Delta t}{\mu(i+\tfrac{1}{2},j,k+\tfrac{1}{2})\Delta z}\bigg[E_x^n(i+\tfrac{1}{2},j,k+1)-E_x^n(i+\tfrac{1}{2},j,k)\bigg] \\
+	+\frac{\Delta t}{\mu(i+\tfrac{1}{2},j,k+\tfrac{1}{2})\Delta x}\bigg[E_z^n(i+1,j,k+\tfrac{1}{2})-E_z^n(i,j,k+\tfrac{1}{2})\bigg],
+	\label{eq:hy-update}
+\end{multline}
 
 where
+\begin{align}
+	a(i,j,k) = \bigg[\frac{\epsilon(i,j,k)}{\Delta t}+\frac{\sigma(i,j,k)}{2}\bigg]^{-1},
+	\label{eq:a}
+\end{align}
+and
+\begin{align}
+	b(i,j,k) = \bigg[\frac{\epsilon(i,j,k)}{\Delta t}-\frac{\sigma(i,j,k)}{2}\bigg].
+	\label{eq:a}
+\end{align}
 
 Similarly, the remaining update equations for $E_x, E_z, H_x$ and $H_z$ are
+\begin{multline}
+	E_x^{n+1}(i+\tfrac{1}{2},j,k)\\ 
+	=a(i+\tfrac{1}{2},j,k) \bigg\{b(i+\tfrac{1}{2},j,k)E_x^{n}(i+\tfrac{1}{2},j,k) \\
+	 +\frac{1}{\Delta y}\bigg[H_z^{n+1/2}(i+\tfrac{1}{2},j+\tfrac{1}{2},k)-H_z^{n+1/2}(i+\tfrac{1}{2},j-\tfrac{1}{2},k) \bigg] \\
+	 -\frac{1}{\Delta z} \bigg[H_y^{n+1/2}(i+\tfrac{1}{2},j,k+\tfrac{1}{2})-H_y^{n+1/2}(i+\tfrac{1}{2},j,k-\tfrac{1}{2})\bigg] \\
+	 -J_{x,src}(i+\tfrac{1}{2},j,k)
+	 \bigg\},
+	\label{eq:ex-update}
+\end{multline}
+\begin{multline}
+	E_z^{n+1}(i,j,k+\tfrac{1}{2})\\ 
+	=a(i,j,k+\tfrac{1}{2}) \bigg\{b(i,j,k+\tfrac{1}{2})E_z^{n}(i,j,k+\tfrac{1}{2}) \\
+	 +\frac{1}{\Delta x}\bigg[H_y^{n+1/2}(i+\tfrac{1}{2},j,k+\tfrac{1}{2})-H_y^{n+1/2}(i-\tfrac{1}{2},j,k+\tfrac{1}{2}) \bigg] \\
+	 -\frac{1}{\Delta y} \bigg[H_x^{n+1/2}(i,j+\tfrac{1}{2},k+\tfrac{1}{2})-H_x^{n+1/2}(i,j-\tfrac{1}{2},k+\tfrac{1}{2})\bigg] \\
+	 -J_{z,src}(i,j,k+\tfrac{1}{2})
+	 \bigg\},
+	\label{eq:ez-update}
+\end{multline}
+\begin{multline}
+	H_x^{n+1/2}(i,j+\tfrac{1}{2},k+\tfrac{1}{2}) = H_x^{n-1/2}(i,j+\tfrac{1}{2},k+\tfrac{1}{2}) \\ 
+	-\frac{\Delta t}{\mu(i,j+\tfrac{1}{2},k+\tfrac{1}{2})\Delta y}\bigg[E_z^n(i,j+1,k+\tfrac{1}{2})-E_z^n(i,j,k+\tfrac{1}{2})\bigg] \\
+	+\frac{\Delta t}{\mu(i,j+\tfrac{1}{2},k+\tfrac{1}{2})\Delta z}\bigg[E_y^n(i,j+\tfrac{1}{2},k+1)-E_y^n(i,j+\tfrac{1}{2},k)\bigg],
+	\label{eq:hx-update}
+\end{multline}
+and
+\begin{multline}
+	H_z^{n+1/2}(i+\tfrac{1}{2},j+\tfrac{1}{2},k) = H_z^{n-1/2}(i+\tfrac{1}{2},j+\tfrac{1}{2},k) \\ 
+	-\frac{\Delta t}{\mu(i+\tfrac{1}{2},j+\tfrac{1}{2},k)\Delta x}\bigg[E_y^n(i+1,j+\tfrac{1}{2},k)-E_y^n(i,j+\tfrac{1}{2},k)\bigg] \\
+	+\frac{\Delta t}{\mu(i+\tfrac{1}{2},j+\tfrac{1}{2},k)\Delta y}\bigg[E_x^n(i+\tfrac{1}{2},j+1,k)-E_x^n(i+\tfrac{1}{2},j,k)\bigg].
+	\label{eq:hz-update}
+\end{multline}
+
+The Dirichlet PEC boundary condition found in Eq. (\ref{eq:dirichlet}) are built into Eqs. (\ref{eq:ey-update}) and (\ref{eq:ex-update}) via defining $E_x$ and $E_y$ on the $j=0$ and $i=0$ planes respectively inside of the PEC region. Thus after these fields are initialized to zero, they are never updated. No PEC conditions are required for Eq. \ref{eq:ez-update} as the $k=0$ plane is defined to be inside the Mur ABC region.
+
+The same Dirichlet boundary condition can be enforced in Eqs. (\ref{eq:hy-update}) and (\ref{eq:hx-update})-(\ref{eq:hz-update}) by setting any electric fields outside the boundary region to zero on the $j=j_{\max}$, $i=i_{\max}$ and $k=k_{\max}$ planes respectively. The PEC boundary condition is enforced at $k=k_{\max}$ despite this plane existing within the scattered-field region. This is done for convenience as the only fields that should reflect off of it are fields corresponding to leaks from the TF/SF source and waves with frequencies below the cutoff frequency of the $TE_{10}$ mode $f_c$.
+
+\subsubsection{TF/SF 1-way Source}
+\label{subsubsec:tfsf-timestep}
