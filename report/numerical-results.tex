@@ -8,10 +8,12 @@ To verify and validate model results, the case of an infinitely long waveguide w
 
 All verification and validation analyses are performed with $0.1$m stretch of a WR-90, X-band waveguide with a cross section of $a=0.02286$m and $b=0.01016$m \cite{everythingrf}. Said configuration has an analytic $\mathrm{TE_{10}}$ cutoff frequency of as calculated by
 \begin{align}
-    f_c=\frac{c}{2\pi\sqrt{\epsilon_r\mu_r}}\sqrt{\bigg[\bigg]^2}
+    f_c=\frac{c}{2\pi\sqrt{\epsilon_r\mu_r}}\sqrt{\bigg[\frac{m\pi}{a}\bigg]^2}
     \label{eq:analytic-cutoff}
 \end{align}
-from \cite{pozar2011microwave}.
+from \cite{pozar2011microwave}. Using free space dielectric parameters, this geometry has a cutoff frequency of $6.557$GHz for the $\mathrm{TE_{10}}$ mode.
+
+To ensure waves above the cutoff frequency are able to freely propagate, a monochromatic source as defined by \ref{eq:tapered-sin} is used with a 
 
 \subsection{Analysis of Unloaded Q with Varying Dielectric Loss}
 \label{subsec:dielectric-loss}

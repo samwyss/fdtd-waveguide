@@ -112,12 +112,14 @@ in the total field region with $E_{scat}$ as the scattered electric field, $H_{s
 The time-varying electric source field is specific to the desired simulation outcome. To obtain a response at a nearly monochromatic frequency, a tapered sine wave may be used 
 \begin{align}
 	E_{y,src} = E_0\left[1 - \exp{\frac{(t - t_d)}{\tau}}\right]\sin{\omega_0 t}
+	\label{eq:tapered-sin}
 \end{align}
 where $t_d$ is a delay time and $\tau$ is the temporal width of the ramping period. The tapered sine source gradually ramps-up to full field intensity reducing numerical artifacts from sudden jumps \cite{rothlecnotes}.
 
 To obtain a wide-band simulation response, a modulated Gaussian pulse is ideal as it allows for the specification of frequency content via the temporal ramping period width $\tau$ and a carrier center angular frequency $\omega_0$ \cite{rothlecnotes}  
 \begin{align}
 	E_{y,src} = E_0\exp{\left(-\frac{1}{2}\left(\frac{t-t_d}{\tau}\right)^2\right)}\sin{\omega_0t}.
+	\label{eq:mod-gauss}
 \end{align}
 
 \subsubsection{Mur's Absorbing Boundary Condition}

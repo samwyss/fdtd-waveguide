@@ -823,12 +823,12 @@ impl Engine {
             for i in 1..(geometry.num_vox_x - 1) {
                 // scattered field corrections
                 *self.hx.idxm(i, j, geometry.num_vox_z - TFSF_SRC_IDX) += hay
-                    * self.modulated_gaussian(config)
+                    * self.tapered_sin(config)
                     * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
 
                 // total field corrections
                 *self.hx.idxm(i, j, geometry.num_vox_z - TFSF_SRC_IDX - 1) -= hay
-                    * self.modulated_gaussian(config)
+                    * self.tapered_sin(config)
                     * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
             }
         }
@@ -857,14 +857,14 @@ impl Engine {
                 *self.ey.idxm(i, j, geometry.num_vox_z - TFSF_SRC_IDX + 1) += (dt
                     / (geometry.ep * geometry.dy))
                     * (ETA_0 * (geometry.mu_r / geometry.ep_r).sqrt()).powi(-1)
-                    * self.modulated_gaussian(config)
+                    * self.tapered_sin(config)
                     * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
 
                 // total field corrections
                 *self.ey.idxm(i, j, geometry.num_vox_z - TFSF_SRC_IDX) -= (dt
                     / (geometry.ep * geometry.dy))
                     * (ETA_0 * (geometry.mu_r / geometry.ep_r).sqrt()).powi(-1)
-                    * self.modulated_gaussian(config)
+                    * self.tapered_sin(config)
                     * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
             }
         }
