@@ -2,10 +2,19 @@
 \label{sec:numres} 
 All update equations as defined in Section \ref{subsec:timestepeqs} were implemented in Rust. This language was choosen for its C++ like performance while enforcing compile-time memory safety which makes writing fast and safe CEM codes relatively easy. An overview of this implementation can be found in \ref{subsec:code}.
 
-All simulations will be of a $0.1$ meter stretch of a WR-90, X-band waveguide with a cross section of $a=0.02286$ and $b=0.01016$ \cite{everythingrf} unless otherwise noted.
-
 \subsection{Verification and Validation}
 \label{subsec:vv}
+To verify and validate model results, the case of an infinitely long waveguide with fields propagating in the $\mathrm{TE_{10}}$ mode. This case is chosen as simulated results can easily be compared to analytic results.
 
+All verification and validation analyses are performed with $0.1$m stretch of a WR-90, X-band waveguide with a cross section of $a=0.02286$m and $b=0.01016$m \cite{everythingrf}. Said configuration has an analytic $\mathrm{TE_{10}}$ cutoff frequency of as calculated by
+\begin{align}
+    f_c=\frac{c}{2\pi\sqrt{\epsilon_r\mu_r}}\sqrt{\bigg[\bigg]^2}
+    \label{eq:analytic-cutoff}
+\end{align}
+from \cite{pozar2011microwave}.
 
-\subsection{Analysis of Perfectly Damped Systems}
+\subsection{Analysis of Unloaded Q with Varying Dielectric Loss}
+\label{subsec:dielectric-loss}
+
+\subsection{Analysis of Resonance Frequency with Varying Resonator Length}
+\label{subsec:resonance-length}

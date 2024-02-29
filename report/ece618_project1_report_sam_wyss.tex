@@ -43,7 +43,7 @@
 % paper title
 % can use linebreaks \\ within to get better formatting as desired
 % Generally good to not put math or special symbols in the title.
-\title{3D FDTD Analysis of $\mathrm{TE_{10}}$ Mode Propagation in X-Band Rectangular Waveguides}
+\title{3D FDTD Analysis of X-Band $\mathrm{TE_{101}}$ Rectangular Waveguide Cavity Resonators}
 
 % I'm mashing some templates together here. If you write an actual IEEE transactions paper in LaTeX start from their template and then modify things like packages and files you want to include from there as opposed to starting from this document provided in this course.
 \author{
@@ -59,7 +59,7 @@ West Lafayette, Indiana 47907 \\ E-mail: wysss@purdue.edu}\\
 % As a general rule, do not put math, special symbols or citations
 % in the abstract
 \begin{abstract}
-Write your abstract text here.
+Three Dimensional Finite Difference Time Domain (FDTD) analysis is applied to X-Band waveguides and cavity resonator systems. To model these systems \textit{in silico}, leap-frogging time update equations are derived from Maxwell's Equations using the staggered Yee grid. The model is validated using the case of an infinitely long waveguide using Mur's Absorbing Boundary Condition (ABC). Perfect electrical conductors (PECs) are used to bound the waveguide as to limit the variation of Q to dielectric loss. Cavity length is also varied to model the change in resonance frequency.
 \end{abstract}
 
 % For peerreview papers, this IEEEtran command inserts a page break and
@@ -71,9 +71,6 @@ Write your abstract text here.
 \input{intro}
 \input{mathematical-model.tex}
 \input{numerical-results.tex}
-%\input{equations}
-%\input{figures}
-%\input{reference-management}
 \input{conclusion}
 \input{appendix.tex}
 
