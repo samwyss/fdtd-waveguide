@@ -14,7 +14,7 @@ use std::io::BufWriter;
 
 // constant declarations
 const ONE_OVER_TWO: f64 = 1.0 / 2.0; // commonly used constant
-const TFSF_SRC_IDX: usize = 10; // offset for TF/SF 1-way source 
+const TFSF_SRC_IDX: usize = 4; // offset for TF/SF 1-way source
 
 /// ScalarField struct
 ///
@@ -823,12 +823,12 @@ impl Engine {
             for i in 1..(geometry.num_vox_x - 1) {
                 // scattered field corrections
                 *self.hx.idxm(i, j, geometry.num_vox_z - TFSF_SRC_IDX) += hay
-                    * self.tapered_sin(config)
+                    * self.modulated_gaussian(config)
                     * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
 
                 // total field corrections
                 *self.hx.idxm(i, j, geometry.num_vox_z - TFSF_SRC_IDX - 1) -= hay
-                    * self.tapered_sin(config)
+                    * self.modulated_gaussian(config)
                     * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
             }
         }
@@ -857,14 +857,14 @@ impl Engine {
                 *self.ey.idxm(i, j, geometry.num_vox_z - TFSF_SRC_IDX + 1) += (dt
                     / (geometry.ep * geometry.dy))
                     * (ETA_0 * (geometry.mu_r / geometry.ep_r).sqrt()).powi(-1)
-                    * self.tapered_sin(config)
+                    * self.modulated_gaussian(config)
                     * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
 
                 // total field corrections
                 *self.ey.idxm(i, j, geometry.num_vox_z - TFSF_SRC_IDX) -= (dt
                     / (geometry.ep * geometry.dy))
                     * (ETA_0 * (geometry.mu_r / geometry.ep_r).sqrt()).powi(-1)
-                    * self.tapered_sin(config)
+                    * self.modulated_gaussian(config)
                     * (PI * i as f64 * geometry.dx / geometry.x_len).sin();
             }
         }
@@ -886,11 +886,27 @@ impl Engine {
             * (TAU * config.frequency * self.cur_time).sin()
     }
 
+    /// computes the value of a modulated gaussian wave using parameters defined in Config struct
+    ///
+    /// # Arguments
+    ///
+    /// - `self` &Engine reference to Engine struct
+    /// - `config` &Config reference to a Config struct
+    ///
+    /// # Returns
+    ///
+    /// # Errors
+    ///
+    fn modulated_gaussian(&self, config: &Config) -> f64 {
+        E.powf(-ONE_OVER_TWO * ((self.cur_time - config.delay_time) / (config.ramp_time)))
+            * (TAU * config.frequency * self.cur_time).sin()
+    }
+
     /// updates Ey field points on z-low plane using Mur ABC scheme
     ///
     /// # Arguments
     ///
-    /// - `&mut self` &mut Engine mutable reference to Engine structt
+    /// - `&mut self` &mut Engine mutable reference to Engine struct
     /// - `geometry` &Geometry reference to a Geometry struct
     /// - `abc1` &f64 reference to 1st Mur ABC update coefficient
     /// - `abc2` &f64 reference to 2nd Mur ABC update coefficient

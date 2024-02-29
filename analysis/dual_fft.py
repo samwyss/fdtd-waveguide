@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-time = 150
+time = 1000
 x_size = 23
 y_size = 11
 z_size = 101
@@ -15,7 +15,7 @@ z_size = 101
 plt.rcParams["text.usetex"] = True
 a = 0.19558
 z_len = 1
-time_step = 0.000000000001863238308179616
+time_step = 0.000000000001863238308179616 * 27
 
 ey = np.loadtxt("./out/ey.csv", delimiter=",", encoding="UTF-8")
 # ey_slice = ey[time].reshape((x_size, y_size, z_size), order="F")[:, y_slice, :]
@@ -25,10 +25,10 @@ ey_chunk_out = []
 
 for time in range(len(ey[:, 0])):
     ey_chunk_src.append(
-        ey[time].reshape((x_size, y_size, z_size), order="F")[12, 6, -15]
+        ey[time].reshape((x_size, y_size, z_size), order="F")[12, 6, -5]
     )
     ey_chunk_out.append(
-        ey[time].reshape((x_size, y_size, z_size), order="F")[12, 6, 15]
+        ey[time].reshape((x_size, y_size, z_size), order="F")[12, 6, 1]
     )
 
 
@@ -75,6 +75,6 @@ plt.legend()
 
 plt.yscale("log")
 
-plt.axvline(x=6.557e9, color="red", linestyle="--", label="Vertical Line at 10 Hz")
+plt.axvline(x=6.557e9, color="red", linestyle="--", label="Analytic Cutoff Frequency")
 
 plt.show()
