@@ -2,14 +2,14 @@ from matplotlib import streamplot
 import matplotlib.pyplot as plt
 import numpy as np
 
-time = 1000 
+time = 628 
 x_size = 23
 y_size = 11
 z_size = 101
 elow = -0.1
 ehigh = 0.1
-hlow = -0.0001
-hhigh = 0.0001
+hlow = -0.000351
+hhigh = 0.000351
 y_slice_idx = 6
 x_slice_idx = 12
 
@@ -31,18 +31,19 @@ hz_slice = hz[time].reshape((x_size, y_size, z_size), order="F")[:, y_slice_idx,
 
 ey_slice2 = ey[time].reshape((x_size, y_size, z_size), order="F")[x_slice_idx, :, :]
 ez_slice = ez[time].reshape((x_size, y_size, z_size), order="F")[x_slice_idx, :, :]
-hy_slice2 = hy[time].reshape((x_size, y_size, z_size), order="F")[x_slice_idx, :, :]
+hx_slice2 = hx[time].reshape((x_size, y_size, z_size), order="F")[x_slice_idx, :, :]
 
 x = np.linspace(0, a, x_size)
 y = np.linspace(0,b, y_size)
 z = np.linspace(0, z_len, z_size)
 
-fig, ax = plt.subplots(2,1)
-fig.dpi = 300
-fig.set_size_inches(4, 1.5)
 
-""" ax.set_xlabel(r"$\hat{z}$-Position [m]")
-ax.set_ylabel(r"$\hat{x}$-Position [m]") """
+plt.rcParams["figure.dpi"] = 600
+
+
+fig, ax = plt.subplots(2,1)
+
+ax[0].set_ylabel(r"$a$ [m]")
 plt.minorticks_on()
 
 X1, Z1 = np.meshgrid(z, x)
@@ -50,14 +51,42 @@ Y2, Z2 = np.meshgrid(z, y)
 
 
 ax[0].quiver(
-    X1, Z1, hz_slice, hx_slice, scale=0.04, pivot="tip", angles="uv"
+    X1, Z1, hz_slice, hx_slice, scale=0.04, pivot="mid", angles="uv"
 )  # Adjust the scale as needed
-ax[0].imshow(ey_slice, cmap="coolwarm", vmax=ehigh, vmin=elow, extent=[0, z_len, 0, a])
+im0 = ax[0].imshow(ey_slice, cmap="coolwarm", vmax=ehigh, vmin=elow, extent=[0, z_len, 0, a])
 # ax.streamplot(X, Z, hz_slice, hx_slice, density=1, color='k')
+""" cbar0 = plt.colorbar(im0, ax=ax[0], fraction=0.046, pad=0.04)
+cbar0.set_label("Intensity [V/m]") """
+# ax[0].ticklabel_format(style="sci", axis="both", scilimits=(0, 0))
+ax[0].minorticks_on()
+ax[0].tick_params(
+    which="both",
+    axis="both",
+    top=True,
+    right=True,
+    labeltop=False,
+    labelright=False,
+)
+
+ax[1].set_xlabel(r"$l$ [m]")
+ax[1].set_ylabel(r"$b$ [m]")
 
 ax[1].quiver(
-Y2, Z2, ez_slice, ey_slice2, scale=10, pivot="tip", angles="uv"
+Y2, Z2, ez_slice, ey_slice2, scale=15, pivot="mid", angles="uv"
 )  # Adjust the scale as needed
-ax[1].imshow(hy_slice2, cmap="coolwarm", vmax=hhigh, vmin=hlow, extent=[0, z_len, 0, b])
+im1 = ax[1].imshow(hx_slice2, cmap="coolwarm", vmax=hhigh, vmin=hlow, extent=[0, z_len, 0, b])
 # ax.streamplot(X, Z, hz_slice, hx_slice, density=1, color='k')
+""" cbar0 = plt.colorbar(im1, ax=ax[1], fraction=0.046, pad=0.04)
+cbar0.set_label("Intensity [A/m]") """
+# ax[1].ticklabel_format(style="sci", axis="both", scilimits=(0, 0))
+ax[1].minorticks_on()
+ax[1].tick_params(
+    which="both",
+    axis="both",
+    top=True,
+    right=True,
+    labeltop=False,
+    labelright=False,
+)
+
 plt.show()

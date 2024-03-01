@@ -1,7 +1,7 @@
 \section{Mathematical Model}
 \label{sec:mathmod}
 
-To model these systems \textit{in silico}, the simulation domain must be divided up into regions where specific mathematical relations hold. For the purposes of this study, there are three such regions (i) PEC surrounded dielectric, (ii) Total Field / Scattered Field (TF/SF) 1-way source, and (iii) Mur's Absorbing Boundary Condition, all shown in Fig. \ref{fig:model}. Regions (ii-iii) are essential for validation of the model as it will give the illusion that the waveguide is infinite in length allowing for propagation characteristics to be studied. To model a $\mathrm{TE_{101}}$ cavity resonator, Mur's ABC will be removed as to allow waves to resonate off of the PEC walls. The governing relations in each of these regions will be formulated and discretized to produce time-stepping formulas which allow the system to evolve transiently.
+To model these systems \textit{in silico}, the simulation domain must be divided up into regions where specific mathematical relations hold. For the purposes of this study, there are three such regions (i) PEC surrounded dielectric, (ii) Total Field / Scattered Field (TF/SF) 1-way source, and (iii) Mur's Absorbing Boundary Condition (ABC), all shown in Fig. \ref{fig:model}. Regions (ii-iii) are essential for validation of the model as they will give the illusion that the waveguide is infinite in length allowing for propagation characteristics to be studied. To model a $\mathrm{TE_{101}}$ cavity resonator, Mur's ABC will be removed as to allow waves to resonate off of the PEC walls. The governing relations in each of these regions will be formulated and discretized to produce time-stepping formulas which allow the system to evolve transiently.
 
 \begin{figure}[h!]  
 	\centering
@@ -43,7 +43,7 @@ In this analysis, no fictitious magnetic conductors will be considered as they a
 \end{align}
 where $\sigma$ is the diagonally-isotropic, time-invariant dielectric conductivity. 
 
-In the described system, the inclusion of a source current density is not necessary as the wave is assumed to already be propagating in the waveguide from the TF/SF source. Despite this, this source current density will be included in the governing set of equations for completeness. The full set of governing equations for waves propogating within the dielectric are as follows
+In the described system, the inclusion of a source current density is not necessary as the wave is assumed to already be propagating in the waveguide from the TF/SF source. Despite this, this source current density will be included in the governing set of equations for completeness. The full set of governing equations for waves propogating within the dielectric are as follows:
 \begin{align}
     \nabla\times\textbf{H} = \epsilon\frac{\partial\textbf{E}}{\partial t} + \sigma\textbf{E} + \textbf{J}_{src}
     \label{eq:ampere-final}
@@ -109,14 +109,14 @@ and
 \end{multline}
 in the total field region with $E_{scat}$ as the scattered electric field, $H_{scat}$ as the scattered magnetic field, and $E_{y,src}$ as a time-varying $E_y$ source field. 
 
-The time-varying electric source field is specific to the desired simulation outcome. To obtain a response at a nearly monochromatic frequency, a tapered sine wave may be used 
+The time-varying electric source field is specific to the desired simulation outcome. To obtain a response at a nearly monochromatic frequency, a tapered sine wave may be used, such as
 \begin{align}
 	E_{y,src} = E_0\left[1 - \exp{\frac{(t - t_d)}{\tau}}\right]\sin{\omega_0 t}
 	\label{eq:tapered-sin}
 \end{align}
 where $t_d$ is a delay time and $\tau$ is the temporal width of the ramping period. The tapered sine source gradually ramps-up to full field intensity reducing numerical artifacts from sudden jumps \cite{rothlecnotes}.
 
-To obtain a wide-band simulation response, a modulated Gaussian pulse is ideal as it allows for the specification of frequency content via the temporal ramping period width $\tau$ and a carrier center angular frequency $\omega_0$ \cite{rothlecnotes}  
+To obtain a wide-band simulation response, a modulated Gaussian pulse is ideal as it allows for the specification of frequency content via the temporal ramping period width $\tau$ and a carrier center angular frequency $\omega_0$ \cite{rothlecnotes}, represented as 
 \begin{align}
 	E_{y,src} = E_0\exp{\left(-\frac{1}{2}\left(\frac{t-t_d}{\tau}\right)^2\right)}\sin{\omega_0t}.
 	\label{eq:mod-gauss}
@@ -144,14 +144,14 @@ To absorb the incident wave introduced in \ref{subsubsec:ftsf-mod},  (\ref{eq:en
 \label{subsec:discretization}
 To map the continuous equations above into data and structures that can be trivially represented using finite sequences of finitely precise numbers as found in all digital computer systems, space and time need to be broken up into discrete steps.
 
-Despite the implementation benefits of abstractly defining spatial and temporal steps as rational multiples of the wavelength and / or Courant number \cite{ufdtd}, it is far more useful from an engineering perspective to define concrete spatial and temporal steps. In the case 3-dimensional waveguides, propagation is largely dependent on the exact sizes of said waveguide. Thus taking dynamic approach by first calculating a maximum spatial or temporal step needed to achieve a desired resolution, and then snapping that to a desired value is choosen. For an arbitrary maximum spatial / temporal step $\Delta s_{\max}$, a snapped $\Delta s$ can be obtained using the following procedure
+Despite the implementation benefits of abstractly defining spatial and temporal steps as rational multiples of the wavelength and/or Courant number \cite{ufdtd}, it is far more useful from an engineering perspective to define concrete spatial and temporal steps. In the case of 3-dimensional waveguides, propagation is largely dependent on the exact sizes of the waveguide. Thus taking dynamic approach by first calculating a maximum spatial or temporal step needed to achieve a desired resolution and then snapping that to a desired value is chosen. For an arbitrary maximum spatial/temporal step $\Delta s_{\max}$, a snapped $\Delta s$ can be obtained using
 \begin{align}
 	\Delta s = \frac{s}{\lceil s / \Delta s_{\max}\rceil}
 	\label{eq:snapping}
 \end{align}
-where s is the `length' of a spatial / temporal step \cite{empossible}. This method ensures that any calculated $\Delta s$ is always less than or equal to that of of the precalculated maximum based on a set precision requirement. This method does come at the cost of adding additional temporal and points into the simulation domain which scales with $O(1)$ and $O(n^2)$ for a 3-dimensional simulation respectively.
+where s is the `length' of a spatial / temporal step \cite{empossible}. This method ensures that any calculated $\Delta s$ is always less than or equal to that of of the precalculated maximum based on a set precision requirement. This method does come at the cost of adding additional temporal and points into the simulation domain which scales with $O(1)$ and $O(n^2)$ respectively for a 3-dimensional simulation.
 
-In the case of spatial steps, the precalculated maximum spatial step is the minimum of the set of steps required to resolve the minimum wavelength $\Delta s_\lambda$ and the minimum feature size $\Delta s_f$ each to a specified resolution as
+In the case of spatial steps, the precalculated maximum step is the minimum of the set of steps required to resolve the minimum wavelength $\Delta s_\lambda$ and the minimum feature size $\Delta s_f$ each to a specified resolution as
 \begin{align}
 	\Delta s_{\max} = \min{(\Delta s_\lambda, \Delta s_f)}.
 	\label{eq:maxspatial}
@@ -171,7 +171,7 @@ For convenience, the following shorthand notation for discrete functions is intr
 	\label{eq:discshorthand}
 \end{align}
 
-With space and time discretized into steps, it is now possible to define spatial and temporal grids for the governing equations in Section \ref{subsec:model-formulation} to act on. As is the standard with finite difference methods in computational electromagnetics, the Yee Grid will be used to construct update equations \cite{taftlovefdtd}. Electric fields will be defined on the primordial grid with integer spatial and temporal indices whereas the magnetic field will be defined on the secondary grid which are offset by half spatial and temporal steps.
+With space and time discretized into steps, it is now possible to define spatial and temporal grids for the governing equations in Section \ref{subsec:model-formulation} to act on. As is the standard with finite difference methods in computational electromagnetics, the Yee Grid will be used to construct update equations \cite{taftlovefdtd}. Electric fields will be defined on the primordial grid with integer spatial and temporal indices whereas the magnetic field will be defined on the secondary grid which is offset by half spatial and temporal steps.
 
 On this grid using the discrete shorthand outlined in  (\ref{eq:discshorthand}) central spatial and temporal first-order derivatives can be expressed as
 \begin{align}
@@ -203,7 +203,7 @@ and
 	\label{eq:discrete-ampere}
 \end{multline}
 
-These can be trivially manipulated to solve for a time updated $E_y$ and $H_y$ as
+These can be trivially manipulated to solve for a time updated $E_y$ and $H_y$ in the form of
 \begin{multline}
 	E_y^{n+1}(i,j+\tfrac{1}{2},k)\\ 
 	=a(i,j+\tfrac{1}{2},k) \bigg\{b(i,j+\tfrac{1}{2},k)E_y^{n}(i,j+\tfrac{1}{2},k) \\
@@ -272,7 +272,7 @@ In the case of the infinite waveguide, the PEC condition at the $k=k_{\max}$ pla
 
 \subsubsection{TF/SF 1-way Source}
 \label{subsubsec:tfsf-timestep}
-Using the linear nature of Maxwell's Equations, $E_y$ and $H_x$ fields can be injected into the simulation by `correcting' the curl equations at an arbitrary source plane $k=k_{src}$ on the primordial grid. As shown in Fig. \ref{fig:model}, the TF/SF source exists near $k=k_{\max}$, thus we define $k\in[0,k_{src}]$ to be the total-field region and $k\in(k_{src},k_{\max}]$ to be the scattered-field region. This distinction between regions allows for the study of reflected field profiles for fields below the cutoff frequency.
+Using the linear nature of Maxwell's Equations, $E_y$ and $H_x$ fields can be injected into the simulation by `correcting' the curl equations at an arbitrary source plane $k=k_{src}$ on the primordial grid. As shown in Fig. \ref{fig:model}, the TF/SF source exists near $k=k_{\max}$, thus we define $k\in[0,k_{src}]$ to be the total-field region and $k\in(k_{src},k_{\max}]$ to be the scattered-field region. The distinction between regions allows for the study of reflected field profiles for fields below the cutoff frequency.
 
 Corrections for the inclusion of an $H_x$ source field in $E_y$ manifest as
 \begin{multline}
@@ -283,7 +283,7 @@ and
 	E_y^{n+1}(i,j+\tfrac{1}{2},k_{src}-1) = E_y^{n+1}(i,j+\tfrac{1}{2},k_{src}-1) \\ + \frac{\Delta t}{\epsilon(i,j+\tfrac{1}{2},k_{src})\Delta z}H_{x,src}(i,j+\tfrac{1}{2},k_{src}-1+\tfrac{1}{2}).
 \end{multline}
 
-Similarly, corrections for the inclusion of an $E_y$ source field in $H_z$ is expressed as
+Similarly, corrections for the inclusion of an $E_y$ source field in $H_z$ are expressed as
 \begin{multline}
 	H_x^{n+1/2}(i,j+\tfrac{1}{2},k_{src}+\tfrac{1}{2}) = H_x^{n+1/2}(i,j+\tfrac{1}{2},k_{src}+\tfrac{1}{2}) \\
 	-\frac{\Delta t}{\mu(i,j+\tfrac{1}{2},k_{src}+\tfrac{1}{2})\Delta z}E_{y,src}^n(i,j,k_{src}),
@@ -294,7 +294,7 @@ and
 	+\frac{\Delta t}{\mu(i,j+\tfrac{1}{2},k_{src}-\tfrac{1}{2})\Delta z}E_{y,src}^n(i,j,k_{src}).
 \end{multline}
 
-When combined with source fields defined in  (\ref{eq:tfsf-ey})-(\ref{eq:tfsf-hx}) these equations allow energy to be injected into the system in the form of a 1-way source wave propagating in an rectangular waveguide\cite{taftlovefdtd}.
+When combined with source fields defined in  (\ref{eq:tfsf-ey})-(\ref{eq:tfsf-hx}) these equations allow energy to be injected into the system in the form of a 1-way source wave propagating in a rectangular waveguide\cite{taftlovefdtd}.
 
 \subsubsection{Mur Absorbing Boundary Condition}
 \label{subsubsec:mur-timestep}
@@ -314,4 +314,4 @@ The remaining derivatives are able to be approximated by  (\ref{eq:derivspace}-\
 	+\frac{(c\Delta t)^2\Delta z}{2\Delta y^2(c\Delta t+\Delta z)}\bigg[U^n(i,j+1,0)-2U^n(i,j,0) \\ 
 	+U^n(i,j-1,0) + U^n(i,j+1,1) \\ -2U^n(i,j,1)+U^n(i,j-1,1)\bigg]
 \end{multline}
-which is the 3D variant of Mur's absorbing boundary condition for $k=0$ \cite{taftlovefdtd}. This condition will only be used for validating the waveguide. This absorbing boundary condition will be removed for the analysis of cavity resonators.
+which is the 3D variant of Mur's absorbing boundary condition for $k=0$ \cite{taftlovefdtd}. This condition will only be used for validating the waveguide and will be removed for the analysis of cavity resonators.
