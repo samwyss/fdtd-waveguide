@@ -22,14 +22,14 @@ To compile a release build, please follow these steps.
 Prior to running ensure all model parameters in `config.toml` are set appropriately. 
 The model will pass these parameters to the engine. 
 
-**WARNING** It is recommended to set `snapshot_steps` to a small number unless you are certain you need a large number of time-steps. 
+**WARNING** It is recommended to set `snapshot_steps` to a small number unless you are certain you need a large number of timesteps. 
 It is very easy to inadvertently generate Gigabytes of data per run if you are not careful.
 
 Once compiled, the release build can be found under `./target/release/driver.<>` where `.<>` corresponds to the file extension of executables on your platform.
 
 ## Data
 Field data is stored in the `./out/` directory in `.csv` format. 
-For example the x component of the E field is stored in `./out/ex.csv`.
+For example, the x component of the E field is stored in `./out/ex.csv`.
 Rows of these csv files correspond to field values at a given time step in Fortran-style column-ordering.
 
 ## Documentation
@@ -54,9 +54,9 @@ Below are several labeled figures from the report.
 ![Monochromatic Source Field Profiles](./figures/labeled-monochromatic-source-profile.png)
 
    
-4. Comparison of source and transmitted wideband gaussian pulse fields to that of the analytic cutoff frequency.
+4. Comparison of source and transmitted wideband Gaussian pulse fields to that of the analytic cutoff frequency.
 ![Wideband Gaussian Pulse Comparison](./figures/wideband-spectrum.png)
 
 
-5. Comparison of Beeswax to Beryllia filled cavity resonator with Mur ABC replaced by PEC Wall
+5. Comparison of Beeswax to Beryllia filled cavity resonator with Mur ABC replaced by PEC wall
 ![Comparison of Beeswax to Beryllia](./figures/comp.png)
