@@ -7,13 +7,15 @@ With that said however all code is reasonably documented to the standards outlin
 
 ## Release Builds
 To compile a release build, please follow these steps.
-1. [Download Rust](https://www.rust-lang.org/)
-2. Set the following environment variable in your preferred terminal to generate optimized SIMD instructions for your CPU.
-    
-    
+
+If you do not have it installed already, you will first need to [download and install Rust](https://www.rust-lang.org/).
+
+Next, set the following environment variable in your preferred terminal to generate optimized SIMD instructions for your CPU. 
+
+
     RUSTFLAGS = "-C target-cpu=native"
 
-3. Compile with the following command.
+The codebase can now be compiled with the following command
     
 
     cargo build --release
