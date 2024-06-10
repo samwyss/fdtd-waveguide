@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["C_0","EP_0","ETA_0","MU_0"],"mod":["engine","geometry","solver"]};
