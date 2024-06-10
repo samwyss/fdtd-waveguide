@@ -3,7 +3,7 @@ A 3D Finite-Difference Time-Domain solver for ECE 61800 Project 1.
 Please reach out if you are interested in the project / course details or the report.
 
 This codebase, as well as others from this class, are not designed to be user-friendly as they were only intended to be ran by myself for the purpose of a class project.
-With that said however all code is reasonably documented to the standards outlined in ECE61800.
+With that said however all code is reasonably documented to the standards outlined in ECE 61800.
 
 ## Release Builds
 To compile a release build, please follow these steps.
