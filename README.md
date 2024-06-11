@@ -1,9 +1,10 @@
 # fdtd-waveguide
-A 3D Finite-Difference Time-Domain solver for ECE 61800 Project 1.
-Please reach out if you are interested in the project / course details or the report.
+A 3D Finite-Difference Time-Domain solver for a graduate CEM course offered at Purdue University.
+At the request of the instructor, the course details and project report have been removed from this repository.
+Please reach out if you are interested in the course details and project report.
 
 This codebase, as well as others from this class, are not designed to be user-friendly as they were only intended to be run by myself for the purpose of a class project.
-With that said however all code is reasonably documented to the standards outlined in ECE 61800.
+With that said however all code is reasonably documented to the standards outlined in this course.
 
 ## Release Builds
 To compile a release build, please follow these steps.
